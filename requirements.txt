@@ -1,0 +1,7 @@
+# Production requirements
+pypandoc==1.4
+pyspark==2.2.0
+
+# Development requirements
+pytest==3.2.3
+prospector==0.12.7
