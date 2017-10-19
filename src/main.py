@@ -32,7 +32,7 @@ def main():
     # this will log to the console but not to files.
     log4j_logger = spark_session._jvm.org.apache.log4j  # pylint:disable=protected-access
     logger = log4j_logger.LogManager.getLogger("aida-insights")
-    logger.info("#### STARTING UP APPLICATION AIDA INSIGHTS #####")
+    logger.info("aida_insights:  STARTING UP APPLICATION AIDA INSIGHTS")
 
     start = time.time()
     init.analyze(spark_session, logger, **job_args)
