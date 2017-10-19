@@ -29,7 +29,7 @@ def main():
 
     spark_session = SparkSession.builder.appName("aida-insights").getOrCreate()
 
-    # this will log to the console but not to files..
+    # this will log to the console but not to files.
     log4j_logger = spark_session._jvm.org.apache.log4j  # pylint:disable=protected-access
     logger = log4j_logger.LogManager.getLogger("aida-insights")
     logger.info("#### STARTING UP APPLICATION AIDA INSIGHTS #####")

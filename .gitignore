@@ -69,7 +69,7 @@ target/
 # PyCharm and VirtualEnv
 .idea
 .venv
-aida-insights.iml.iml
+aida-insights.iml
 /metastore_db/
 
 # Program output
