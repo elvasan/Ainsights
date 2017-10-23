@@ -1,17 +1,19 @@
+from jobs.input.input_processing import process_input_file
+
+
 def analyze(spark, logger, **job_args):
-    # input_file_location = job_args["input_file_name"]
-    # classification_file = job_args["classification_file"]
-    # output_dir = job_args["output_dir"]
+    client_name = job_args["client_name"]
+    environment = job_args["environment"]
 
-    logger.info("#### USING THE FOLLOWING JOB ARGUMENTS ####")
-    # logger.info("#### INPUT FILE LOCATION: " + input_file_location)
-    # logger.info("#### OUTPUT FILE LOCATION: " + output_dir)
-    # logger.info("#### CLASSIFICATIONS FILE: " + classification_file)
+    aws_region = 'us-east-1'
 
-    # read in input_csv file and Classifications DF
-    # logger.info("#### READING FILE INPUTS #####")
-    # input_dataframe = input_file(spark, logger, input_file_location)
-    # input_dataframe.show(15, False)
+    logger.info("aida_insights: USING THE FOLLOWING JOB ARGUMENTS")
+    logger.info("aida_insights: CLIENT NAME: " + client_name)
+    logger.info("aida_insights: ENVIRONMENT: " + environment)
+
+    # read the input file into a dataframe
+    logger.info("aida_insights: READING INPUT FILE")
+    input_data_frame = process_input_file(spark, logger, client_name, environment, aws_region)
 
     # logger.info("#### CLASSIFYING FILE INPUTS #####")
     # classification_dataframe = classify(spark, input_dataframe, classification_file)
@@ -21,6 +23,8 @@ def analyze(spark, logger, **job_args):
     # output_csv = score(classification_dataframe)
     # output_csv.show(15, False)
 
+    input_data_frame.show(25, False)
+
     # logger.info("#### WRITING OUTPUT FILE ####")
     # Write values
     # output_csv \
@@ -28,5 +32,5 @@ def analyze(spark, logger, **job_args):
     #     .write \
     #     .csv(path=output_dir, mode="overwrite", header="True")
 
-    logger.info("#### STOPPING APPLICATION ####")
+    logger.info("aida_insights: STOPPING APPLICATION")
     spark.stop()
