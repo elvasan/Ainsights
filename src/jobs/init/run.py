@@ -1,5 +1,6 @@
-from jobs.classification.classify import classify
+from jobs.classification.classify import classify, get_classification_subcategory_df
 from jobs.input.input_processing import process_input_file
+from jobs.scoring.scoring import score_file
 
 
 def analyze(spark, logger, **job_args):
@@ -22,9 +23,10 @@ def analyze(spark, logger, **job_args):
     classification_data_frame = classify(spark, logger, input_data_frame, environment, aws_region)
     logger.debug(classification_data_frame.show(15, True))
 
-    # logger.info("#### SCORING RESULTS ####")
-    # output_csv = score(spark, classification_data_frame, subcategory_data_frame)
-    # output_csv.show(15, False)
+    logger.info(logger_prefix + "SCORING RESULTS")
+    classify_subcategory_df = get_classification_subcategory_df(spark, environment, aws_region)
+    scored_data_frame = score_file(classify_subcategory_df, classification_data_frame)
+    logger.debug(scored_data_frame.show(15, True))
 
     # logger.info("#### WRITING OUTPUT FILE ####")
     # Write values
