@@ -1,0 +1,10 @@
+classif_subcategory_key,classif_category_key,subcategory_nm,display_nm
+1,1,auto_sales,Auto Sales
+2,1,education,Education
+3,1,insurance,Insurance
+4,1,financial_services,Financial Services
+5,1,real_estate,Real Estate
+6,1,jobs,Jobs
+7,1,legal,Legal
+8,1,home_services,Home Services
+9,1,other,Other
