@@ -1,10 +1,10 @@
 import pytest
 
 from jobs.classification import classify
-from jobs.classification.schema import classification_lead_schema, classification_set_elem_xref_schema
 from shared.utilities import *
 from tests.jobs.classification.schema import expected_input_schema, \
-    expected_classification_result_schema, expected_input_lead_transformed_schema
+    expected_classification_result_schema, expected_input_lead_transformed_schema, classification_lead_schema, \
+    classification_set_elem_xref_schema
 
 spark_session_enabled = pytest.mark.usefixtures("spark_session")
 
@@ -35,7 +35,7 @@ def test_get_classification_schema_location_returns_correct_for_prod():
 
 def test_get_classification_schema_location_returns_correct_for_local():
     file_name = classify.get_classification_schema_location(ENV_LOCAL, 'us-east-1', 'classif_lead')
-    assert 'samples/classification/classif_lead/' == file_name
+    assert '../samples/classification/classif_lead/' == file_name
 
 
 def test_join_input_to_lead_data_frame_returns_expected_columns(spark_session):

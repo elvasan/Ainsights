@@ -1,4 +1,4 @@
-from jobs.classification import classify
+from jobs.classification.classify import classify
 from jobs.input.input_processing import process_input_file
 
 
@@ -19,11 +19,11 @@ def analyze(spark, logger, **job_args):
     logger.debug(input_data_frame.show(25, False))
 
     logger.info(logger_prefix + "CLASSIFYING FILE INPUTS")
-    classification_data_frame = classify.classify(spark, logger, input_data_frame, environment, aws_region)
+    classification_data_frame = classify(spark, logger, input_data_frame, environment, aws_region)
     logger.debug(classification_data_frame.show(15, True))
 
     # logger.info("#### SCORING RESULTS ####")
-    # output_csv = score(classification_dataframe)
+    # output_csv = score(spark, classification_data_frame, subcategory_data_frame)
     # output_csv.show(15, False)
 
     # logger.info("#### WRITING OUTPUT FILE ####")

@@ -1,6 +1,3 @@
-from jobs.classification.schema import classification_lead_schema, classification_set_elem_xref_schema, \
-    classification_subcategory_schema
-
 from shared.utilities import *
 
 
@@ -66,7 +63,10 @@ def join_input_to_classification_set_df(input_df, classification_set_df):
         .drop(COL_NAME_CLASSIF_SET_KEY,
               COL_NAME_CLASSIF_ELEMENT_KEY,
               COL_NAME_CLASSIF_CATEGORY_KEY,
-              COL_NAME_INSERTED_TIMESTAMP)
+              COL_NAME_INSERTED_TIMESTAMP,
+              COL_NAME_HAS_ERROR,
+              COL_NAME_ERROR_MESSAGE,
+              COL_NAME_AS_OF_TIME)
 
 
 def get_classification_lead_df(spark_session, environment, aws_region):
@@ -77,9 +77,8 @@ def get_classification_lead_df(spark_session, environment, aws_region):
     :param aws_region: The aws region of the classification bucket
     :return: A data frame
     """
-    schema = classification_lead_schema()
     schema_location = get_classification_schema_location(environment, aws_region, CLASSIFICATION_LEAD_SCHEMA_NAME)
-    return load_parquet_into_df(spark_session, schema, schema_location)
+    return load_parquet_into_df(spark_session, schema_location)
 
 
 def get_classification_set_elem_xref_df(spark_session, environment, aws_region):
@@ -90,10 +89,9 @@ def get_classification_set_elem_xref_df(spark_session, environment, aws_region):
     :param aws_region: The aws region of the classification bucket
     :return: A data frame
     """
-    schema = classification_set_elem_xref_schema()
     schema_location = get_classification_schema_location(environment, aws_region,
                                                          CLASSIFICATION_SET_ELEMENT_XREF_SCHEMA_NAME)
-    return load_parquet_into_df(spark_session, schema, schema_location)
+    return load_parquet_into_df(spark_session, schema_location)
 
 
 def get_classification_subcategory_df(spark_session, environment, aws_region):
@@ -104,10 +102,9 @@ def get_classification_subcategory_df(spark_session, environment, aws_region):
     :param aws_region: The aws region of the classification bucket
     :return: A data frame
     """
-    schema = classification_subcategory_schema()
     schema_location = get_classification_schema_location(environment, aws_region,
                                                          CLASSIFICATION_SUBCATEGORY_SCHEMA_NAME)
-    return load_parquet_into_df(spark_session, schema, schema_location)
+    return load_parquet_into_df(spark_session, schema_location)
 
 
 def get_classification_schema_location(environment, aws_region, schema_name):
@@ -120,22 +117,17 @@ def get_classification_schema_location(environment, aws_region, schema_name):
     :return: A string for retrieving classification parquet files.
     """
     if environment == ENV_LOCAL:
-        bucket_prefix = "samples/"
+        bucket_prefix = LOCAL_BUCKET_PREFIX
     else:
         bucket_prefix = 'S3://jornaya-{0}-{1}-prj/'.format(environment, aws_region)
     return bucket_prefix + 'classification/' + schema_name + '/'
 
 
-def load_parquet_into_df(spark_session, schema, file_location):
+def load_parquet_into_df(spark_session, file_location):
     """
     Loads a parquet file into a data frame.
-    :param spark_session:
-    :param schema: The data frame schema
+    :param spark_session: The spark context initialized in on the application start up
     :param file_location: The absolute path to the parquet file
-    :return:
+    :return: A DataFrame from the parquet location
     """
-    # TODO: Change this to read directly from parquet
-    return spark_session.read.parquet(file_location) \
-        .schema(schema) \
-        .option("header", "true") \
-        .option("mode", "FailFast")
+    return spark_session.read.parquet(file_location)

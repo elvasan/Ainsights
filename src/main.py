@@ -16,7 +16,8 @@ else:
 
 def main():
     parser = argparse.ArgumentParser(description='Run a PySpark job')
-    parser.add_argument('--job-args', nargs='*',
+    parser.add_argument('--job-args',
+                        nargs='*',
                         help="Extra arguments to send to the PySpark job (example: --job-args foo=bar)")
 
     args = parser.parse_args()
@@ -24,7 +25,7 @@ def main():
     job_args = dict()
     if args.job_args:
         job_args_tuples = [arg_str.split('=') for arg_str in args.job_args]
-        print('job_args_tuples: %s' % job_args_tuples)
+        print('job_args: %s' % job_args_tuples)
         job_args = {a[0]: a[1] for a in job_args_tuples}
 
     spark_session = SparkSession.builder.appName("aida-insights").getOrCreate()

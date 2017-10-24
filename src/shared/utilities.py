@@ -6,7 +6,6 @@ ENV_PROD = "prod"
 ENV_LOCAL = "local"
 
 # File constants
-# TODO: Need another way to get to samples dir. This could vary depending on where we are in the code.
 LOCAL_BUCKET_PREFIX = "../samples/"
 
 # Column constant values
