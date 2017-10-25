@@ -1,23 +1,11 @@
 import pytest
-from jobs.scoring.scoring import score_file, flatten_subcategories
-from shared.utilities import *
 from pyspark.sql.types import StructField, StructType, StringType, LongType
 
+from jobs.scoring.scoring import score_file, flatten_subcategories
+from shared.utilities import ClassificationColumnNames, InputColumnNames, ClassificationCategoryAbbreviations
 
 # define mark (need followup if need this)
 spark_session_enabled = pytest.mark.usefixtures("spark_session")
-
-
-class ClassificationCategoryAbbreviations:
-    AUTO_SALES = 'auto_sales'
-    EDUCATION = 'education'
-    INSURANCE = 'insurance'
-    FINANCIAL_SERVICES = 'financial_services'
-    REAL_ESTATE = 'real_estate'
-    JOBS = 'jobs'
-    LEGAL = 'legal'
-    HOME_SERVICES = 'home_services'
-    OTHER = 'other'
 
 
 def test_flatten_subcategories_returns_rows_with_key_and_abbreviation(spark_session):
@@ -34,13 +22,13 @@ def test_flatten_subcategories_returns_rows_with_key_and_abbreviation(spark_sess
         [8, 0, 0, 0, 0, 0, 0, 0, 1, 0],
         [9, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     ]
-    expected_cols = [COL_NAME_CLASSIF_SUBCATEGORY_KEY, ClassificationCategoryAbbreviations.AUTO_SALES,
+    expected_cols = [ClassificationColumnNames.SUBCATEGORY_KEY, ClassificationCategoryAbbreviations.AUTO_SALES,
                      ClassificationCategoryAbbreviations.EDUCATION, ClassificationCategoryAbbreviations.INSURANCE,
                      ClassificationCategoryAbbreviations.FINANCIAL_SERVICES,
                      ClassificationCategoryAbbreviations.REAL_ESTATE,
                      ClassificationCategoryAbbreviations.JOBS, ClassificationCategoryAbbreviations.LEGAL,
                      ClassificationCategoryAbbreviations.HOME_SERVICES, ClassificationCategoryAbbreviations.OTHER]
-    extracted_row_values = extract_rows_for_col(result_df, expected_cols, COL_NAME_CLASSIF_SUBCATEGORY_KEY)
+    extracted_row_values = extract_rows_for_col(result_df, expected_cols, ClassificationColumnNames.SUBCATEGORY_KEY)
     assert sorted(result_df.schema.names) == sorted(expected_cols)
     assert expected_results == extracted_row_values
 
@@ -70,13 +58,13 @@ def test_score_file_transforms_to_single_values(spark_session):
         [80, 0, 0, 0, 0, 0, 0, 0, 1, 0],
         [90, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     ]
-    col_names = [COL_NAME_RECORD_ID, ClassificationCategoryAbbreviations.AUTO_SALES,
+    col_names = [InputColumnNames.RECORD_ID, ClassificationCategoryAbbreviations.AUTO_SALES,
                  ClassificationCategoryAbbreviations.EDUCATION,
                  ClassificationCategoryAbbreviations.INSURANCE, ClassificationCategoryAbbreviations.FINANCIAL_SERVICES,
                  ClassificationCategoryAbbreviations.REAL_ESTATE, ClassificationCategoryAbbreviations.JOBS,
                  ClassificationCategoryAbbreviations.LEGAL, ClassificationCategoryAbbreviations.HOME_SERVICES,
                  ClassificationCategoryAbbreviations.OTHER]
-    extracted_row_values = extract_rows_for_col(result_df, col_names, COL_NAME_RECORD_ID)
+    extracted_row_values = extract_rows_for_col(result_df, col_names, InputColumnNames.RECORD_ID)
     assert expected_results == extracted_row_values
 
 
@@ -85,7 +73,7 @@ def test_score_file_returns_category_abbrev_column_values(spark_session):
     input_df = spark_session.createDataFrame(input_rows, scoring_input_schema())
     subcategory_df = define_classification_subcategory_df(spark_session)
     result_df = score_file(subcategory_df, input_df)
-    col_names = [COL_NAME_RECORD_ID, ClassificationCategoryAbbreviations.AUTO_SALES,
+    col_names = [InputColumnNames.RECORD_ID, ClassificationCategoryAbbreviations.AUTO_SALES,
                  ClassificationCategoryAbbreviations.EDUCATION,
                  ClassificationCategoryAbbreviations.INSURANCE, ClassificationCategoryAbbreviations.FINANCIAL_SERVICES,
                  ClassificationCategoryAbbreviations.REAL_ESTATE, ClassificationCategoryAbbreviations.JOBS,
@@ -107,13 +95,13 @@ def test_score_file_with_no_classification_in_row(spark_session):
         [20, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # row should be all zeros
         [30, 0, 0, 1, 0, 0, 0, 0, 0, 0]
     ]
-    col_names = [COL_NAME_RECORD_ID, ClassificationCategoryAbbreviations.AUTO_SALES,
+    col_names = [InputColumnNames.RECORD_ID, ClassificationCategoryAbbreviations.AUTO_SALES,
                  ClassificationCategoryAbbreviations.EDUCATION,
                  ClassificationCategoryAbbreviations.INSURANCE, ClassificationCategoryAbbreviations.FINANCIAL_SERVICES,
                  ClassificationCategoryAbbreviations.REAL_ESTATE, ClassificationCategoryAbbreviations.JOBS,
                  ClassificationCategoryAbbreviations.LEGAL, ClassificationCategoryAbbreviations.HOME_SERVICES,
                  ClassificationCategoryAbbreviations.OTHER]
-    extracted_row_values = extract_rows_for_col(result_df, col_names, COL_NAME_RECORD_ID)
+    extracted_row_values = extract_rows_for_col(result_df, col_names, InputColumnNames.RECORD_ID)
     assert expected_results == extracted_row_values
 
 
@@ -135,17 +123,18 @@ def define_classification_subcategory_df(spark_session):
                      (7, 1, ClassificationCategoryAbbreviations.LEGAL, 'Legal', 0),
                      (8, 1, ClassificationCategoryAbbreviations.HOME_SERVICES, 'Home Services', 0),
                      (9, 1, ClassificationCategoryAbbreviations.OTHER, 'Other', 0)]
-    col_names = [COL_NAME_CLASSIF_SUBCATEGORY_KEY, COL_NAME_CLASSIF_CATEGORY_KEY, COL_NAME_SUBCATEGORY_NAME,
-                 COL_NAME_DISPLAY_NAME, COL_NAME_INSERTED_TIMESTAMP]
+    col_names = [ClassificationColumnNames.SUBCATEGORY_KEY, ClassificationColumnNames.CATEGORY_KEY,
+                 ClassificationColumnNames.SUBCATEGORY_NAME,
+                 ClassificationColumnNames.DISPLAY_NAME, ClassificationColumnNames.INSERTED_TIMESTAMP]
     return spark_session.createDataFrame(raw_hash_rows, col_names)
 
 
 def scoring_input_schema():
     # record_id, input_id, classif_subcategory_key
     csv_schema = StructType(
-        [StructField(COL_NAME_RECORD_ID, LongType(), False),
-         StructField(COL_NAME_INPUT_ID, StringType(), True),
-         StructField(COL_NAME_CLASSIF_SUBCATEGORY_KEY, StringType(), True)])
+        [StructField(InputColumnNames.RECORD_ID, LongType(), False),
+         StructField(InputColumnNames.INPUT_ID, StringType(), True),
+         StructField(ClassificationColumnNames.SUBCATEGORY_KEY, StringType(), True)])
     return csv_schema
 
 

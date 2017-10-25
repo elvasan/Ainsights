@@ -25,7 +25,6 @@ def main():
     job_args = dict()
     if args.job_args:
         job_args_tuples = [arg_str.split('=') for arg_str in args.job_args]
-        print('job_args: %s' % job_args_tuples)
         job_args = {a[0]: a[1] for a in job_args_tuples}
 
     spark_session = SparkSession.builder.appName("aida-insights").getOrCreate()
@@ -33,13 +32,12 @@ def main():
     # this will log to the console but not to files.
     log4j_logger = spark_session._jvm.org.apache.log4j  # pylint:disable=protected-access
     logger = log4j_logger.LogManager.getLogger("aida-insights")
-    logger.info("aida_insights:  STARTING UP APPLICATION AIDA INSIGHTS")
 
     start = time.time()
     init.analyze(spark_session, logger, **job_args)
     end = time.time()
 
-    print("\nExecution of job AIDA Insights took %s seconds" % (end - start))
+    logger.info("\nExecution of AIDA-INSIGHTS for client %s took %s seconds" % (job_args["client_name"], end - start))
 
 
 if __name__ == '__main__':

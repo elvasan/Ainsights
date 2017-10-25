@@ -75,3 +75,4 @@ aida-insights.iml
 # Program output
 /output/
 /spark-warehouse/
+samples/beestest/output/*

@@ -1,36 +1,71 @@
-# Environment Definitions
-ENV_QA = "qa"
-ENV_DEV = "dev"
-ENV_STAGING = "staging"
-ENV_PROD = "prod"
-ENV_LOCAL = "local"
+class Environments:  # pylint:disable=too-few-public-methods
+    QA = "qa"  # pylint:disable=invalid-name
+    DEV = "dev"
+    STAGING = "staging"
+    PROD = "prod"
+    LOCAL = "local"
+    LOCAL_BUCKET_PREFIX = "../samples/"
+    AWS_REGION = 'us-east-1'
 
-# File constants
-LOCAL_BUCKET_PREFIX = "../samples/"
 
-# Column constant values
-ID_TYPE_LEAD_ID = "leadid"
-ID_TYPE_PHONES = "phone"
-ID_TYPE_EMAIL = "email"
+class InputColumnNames:  # pylint:disable=too-few-public-methods
+    RECORD_ID = "record_id"
+    LEAD_ID = "lead_id"
+    HAS_ERROR = "has_error"
+    ERROR_MESSAGE = "error_message"
+    INPUT_ID = "input_id"
+    INPUT_ID_TYPE = "input_id_type"
+    AS_OF_TIME = "as_of_time"
 
-# Column constant names
-COL_NAME_RECORD_ID = "record_id"
-COL_NAME_LEAD_ID = "lead_id"
-COL_NAME_HAS_ERROR = "has_error"
-COL_NAME_ERROR_MESSAGE = "error_message"
-COL_NAME_INPUT_ID = "input_id"
-COL_NAME_INPUT_ID_TYPE = "input_id_type"
-COL_NAME_AS_OF_TIME = "as_of_time"
-COL_NAME_INSERTED_TIMESTAMP = "inserted_ts"
-COL_NAME_CLASSIF_TIMESTAMP = "classif_ts"
 
-COL_NAME_CLASSIF_SET_KEY = "classif_set_key"
-COL_NAME_CLASSIF_ELEMENT_KEY = "classif_element_key"
-COL_NAME_CLASSIF_CATEGORY_KEY = "classif_category_key"
-COL_NAME_CLASSIF_SUBCATEGORY_KEY = "classif_subcategory_key"
-COL_NAME_SUBCATEGORY_NAME = "subcategory_nm"
-COL_NAME_DISPLAY_NAME = "display_nm"
+class GenericColumnNames:  # pylint:disable=too-few-public-methods
+    LEAD_ID = "leadid"
+    PHONE = "phone"
+    EMAIL = "email"
+    RECORD_ID = "recordid"
 
-CLASSIFICATION_LEAD_SCHEMA_NAME = "classif_lead"
-CLASSIFICATION_SET_ELEMENT_XREF_SCHEMA_NAME = "classif_set_element_xref"
-CLASSIFICATION_SUBCATEGORY_SCHEMA_NAME = "classif_subcategory"
+
+class OutputFileNames:  # pylint:disable=too-few-public-methods
+    TIME_FORMAT = "%Y%m%d%H%M"
+    PRODUCT_NAME = 'aidainsights'
+
+
+class ClassificationSchemaNames:  # pylint:disable=too-few-public-methods
+    LEAD = "classif_lead"
+    SET_ELEMENT_XREF = "classif_set_element_xref"
+    SUBCATEGORY = "classif_subcategory"
+
+
+class ClassificationColumnNames:  # pylint:disable=too-few-public-methods
+    SUBCATEGORY_KEY = "classif_subcategory_key"
+    CATEGORY_KEY = "classif_category_key"
+    ELEMENT_KEY = "classif_element_key"
+    SET_KEY = "classif_set_key"
+    SUBCATEGORY_NAME = "subcategory_nm"
+    DISPLAY_NAME = "display_nm"
+    CLASSIF_TIMESTAMP = "classif_ts"
+    INSERTED_TIMESTAMP = "inserted_ts"
+
+
+class ClassificationCategoryAbbreviations:  # pylint:disable=too-few-public-methods
+    AUTO_SALES = 'auto_sales'
+    EDUCATION = 'education'
+    INSURANCE = 'insurance'
+    FINANCIAL_SERVICES = 'financial_services'
+    REAL_ESTATE = 'real_estate'
+    JOBS = 'jobs'
+    LEGAL = 'legal'
+    HOME_SERVICES = 'home_services'
+    OTHER = 'other'
+
+
+class ClassificationCategoryDisplayNames:  # pylint:disable=too-few-public-methods
+    AUTO_SALES = 'Auto Sales'
+    EDUCATION = 'Education'
+    INSURANCE = 'Insurance'
+    FINANCIAL_SERVICES = 'Financial Services'
+    REAL_ESTATE = 'Real Estate'
+    JOBS = 'Jobs'
+    LEGAL = 'Legal'
+    HOME_SERVICES = 'Home Services'
+    OTHER = 'Other'

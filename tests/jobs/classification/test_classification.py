@@ -1,7 +1,7 @@
 import pytest
 
 from jobs.classification import classify
-from shared.utilities import *
+from shared.utilities import Environments, ClassificationColumnNames
 from tests.jobs.classification.schema import expected_input_schema, \
     expected_classification_result_schema, expected_input_lead_transformed_schema, classification_lead_schema, \
     classification_set_elem_xref_schema
@@ -14,27 +14,27 @@ def extract_rows_for_col(data_frame, col_name):
 
 
 def test_get_classification_schema_location_returns_correct_for_dev():
-    file_name = classify.get_classification_schema_location(ENV_DEV, 'us-east-1', 'classif_lead')
+    file_name = classify.get_classification_schema_location(Environments.DEV, 'classif_lead')
     assert 'S3://jornaya-dev-us-east-1-prj/classification/classif_lead/' == file_name
 
 
 def test_get_classification_schema_location_returns_correct_for_qa():
-    file_name = classify.get_classification_schema_location(ENV_QA, 'us-east-1', 'classif_lead')
+    file_name = classify.get_classification_schema_location(Environments.QA, 'classif_lead')
     assert 'S3://jornaya-qa-us-east-1-prj/classification/classif_lead/' == file_name
 
 
 def test_get_classification_schema_location_returns_correct_for_staging():
-    file_name = classify.get_classification_schema_location(ENV_STAGING, 'us-east-1', 'classif_lead')
+    file_name = classify.get_classification_schema_location(Environments.STAGING, 'classif_lead')
     assert 'S3://jornaya-staging-us-east-1-prj/classification/classif_lead/' == file_name
 
 
 def test_get_classification_schema_location_returns_correct_for_prod():
-    file_name = classify.get_classification_schema_location(ENV_PROD, 'us-east-1', 'classif_lead')
+    file_name = classify.get_classification_schema_location(Environments.PROD, 'classif_lead')
     assert 'S3://jornaya-prod-us-east-1-prj/classification/classif_lead/' == file_name
 
 
 def test_get_classification_schema_location_returns_correct_for_local():
-    file_name = classify.get_classification_schema_location(ENV_LOCAL, 'us-east-1', 'classif_lead')
+    file_name = classify.get_classification_schema_location(Environments.LOCAL, 'classif_lead')
     assert '../samples/classification/classif_lead/' == file_name
 
 
@@ -58,7 +58,7 @@ def test_single_join_input_to_lead_df_with_no_matching_lead_id_returns_null_for_
     lead_dataframe = spark_session.createDataFrame(lead_row, classification_lead_schema())
 
     result = classify.join_input_to_lead_df(input_df, lead_dataframe)
-    extracted_results = extract_rows_for_col(result, COL_NAME_CLASSIF_SET_KEY)
+    extracted_results = extract_rows_for_col(result, ClassificationColumnNames.SET_KEY)
     expected_col_results = [None]
 
     assert sorted(expected_input_lead_transformed_schema().names) == sorted(result.schema.names)
@@ -74,7 +74,7 @@ def test_multiple_join_input_to_lead_df_with_no_matching_lead_id_returns_null_fo
     lead_dataframe = spark_session.createDataFrame(lead_row, classification_lead_schema())
 
     result = classify.join_input_to_lead_df(input_df, lead_dataframe)
-    extracted_results = extract_rows_for_col(result, COL_NAME_CLASSIF_SET_KEY)
+    extracted_results = extract_rows_for_col(result, ClassificationColumnNames.SET_KEY)
     expected_col_results = [None, 5]
 
     assert sorted(expected_input_lead_transformed_schema().names) == sorted(result.schema.names)
@@ -102,7 +102,7 @@ def test_join_input_to_classification_set_df_with_null_returns_expected_columns(
     classification_df = spark_session.createDataFrame(classification_row, classification_set_elem_xref_schema())
 
     result = classify.join_input_to_classification_set_df(input_df, classification_df)
-    extracted_results = extract_rows_for_col(result, COL_NAME_CLASSIF_SUBCATEGORY_KEY)
+    extracted_results = extract_rows_for_col(result, ClassificationColumnNames.SUBCATEGORY_KEY)
     expected_col_results = [None, 1]
 
     assert sorted(expected_classification_result_schema().names) == sorted(result.schema.names)
