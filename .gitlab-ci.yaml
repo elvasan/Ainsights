@@ -7,8 +7,6 @@ stages:
   - deploy
 
 lint:
-  only:
-    - develop
   before_script:
     - apk add --update gcc linux-headers musl-dev
     - pip install -r requirements.txt
@@ -20,8 +18,6 @@ lint:
   allow_failure: true
 
 unit:
-  only:
-    - develop
   stage: unit
   before_script:
     - pip install -r requirements.txt
@@ -57,14 +53,10 @@ artifactory:
     - /.*working.*/
 
 dev_deploy:
-  only:
-    - develop
   <<: *deploy_template
   script: # --grants=full here to allow gitlab runner from leadid vpc to push artifacts to jornaya s3, and have jornaya-dev users still able to access them.
     - aws s3 sync dist s3://jornaya-dev-us-east-1-aida-insights/pyspark/ --grants=full=id=05f2ef49af03cacb38e69ed08088c8c539de9d897ededd8a75815571b3acab10 --delete
 qa_deploy:
-  only:
-    - master
   <<: *deploy_template
   script:
     - aws s3 sync dist s3://jornaya-qa-us-east-1-aida-insights/pyspark/ --grants=full=id=05f2ef49af03cacb38e69ed08088c8c539de9d897ededd8a75815571b3acab10 --delete
