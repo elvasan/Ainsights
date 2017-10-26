@@ -114,7 +114,7 @@ def get_classification_schema_location(environment, schema_name):
     if environment == Environments.LOCAL:
         bucket_prefix = Environments.LOCAL_BUCKET_PREFIX
     else:
-        bucket_prefix = 'S3://jornaya-{0}-{1}-prj/'.format(environment, Environments.AWS_REGION)
+        bucket_prefix = 's3://jornaya-{0}-{1}-prj/'.format(environment, Environments.AWS_REGION)
     return bucket_prefix + 'classification/' + schema_name + '/'
 
 

@@ -15,22 +15,22 @@ def extract_rows_for_col(data_frame, col_name):
 
 def test_get_classification_schema_location_returns_correct_for_dev():
     file_name = classify.get_classification_schema_location(Environments.DEV, 'classif_lead')
-    assert 'S3://jornaya-dev-us-east-1-prj/classification/classif_lead/' == file_name
+    assert 's3://jornaya-dev-us-east-1-prj/classification/classif_lead/' == file_name
 
 
 def test_get_classification_schema_location_returns_correct_for_qa():
     file_name = classify.get_classification_schema_location(Environments.QA, 'classif_lead')
-    assert 'S3://jornaya-qa-us-east-1-prj/classification/classif_lead/' == file_name
+    assert 's3://jornaya-qa-us-east-1-prj/classification/classif_lead/' == file_name
 
 
 def test_get_classification_schema_location_returns_correct_for_staging():
     file_name = classify.get_classification_schema_location(Environments.STAGING, 'classif_lead')
-    assert 'S3://jornaya-staging-us-east-1-prj/classification/classif_lead/' == file_name
+    assert 's3://jornaya-staging-us-east-1-prj/classification/classif_lead/' == file_name
 
 
 def test_get_classification_schema_location_returns_correct_for_prod():
     file_name = classify.get_classification_schema_location(Environments.PROD, 'classif_lead')
-    assert 'S3://jornaya-prod-us-east-1-prj/classification/classif_lead/' == file_name
+    assert 's3://jornaya-prod-us-east-1-prj/classification/classif_lead/' == file_name
 
 
 def test_get_classification_schema_location_returns_correct_for_local():
