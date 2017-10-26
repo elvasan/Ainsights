@@ -20,7 +20,7 @@ lint:
 unit:
   stage: unit
   before_script:
-    - apk add --update openjdk8-jre-base
+    - apk add --update openjdk8
     - pip install -r requirements.txt
   script:
     - python -m pytest
