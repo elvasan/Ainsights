@@ -2,11 +2,12 @@ from unittest import mock
 
 import py4j
 import pytest
+from pyspark.sql.types import StructField, StructType, StringType, LongType, BooleanType
 from pyspark.sql.utils import AnalysisException
 
 from jobs.input.input_processing import transform_input_csv, build_input_csv_file_name, input_csv_schema, \
-    input_csv_transformed_schema, load_csv_file, process_input_file
-from shared.utilities import Environments, GenericColumnNames
+    load_csv_file, process_input_file
+from shared.utilities import Environments, GenericColumnNames, InputColumnNames
 
 # define mark (need followup if need this)
 spark_session_enabled = pytest.mark.usefixtures("spark_session")
@@ -14,22 +15,22 @@ spark_session_enabled = pytest.mark.usefixtures("spark_session")
 
 def test_build_input_csv_file_name_returns_correct_dev_env_name():
     full_name = build_input_csv_file_name(Environments.DEV, "beestest")
-    assert full_name == 'S3://jornaya-dev-us-east-1-aida-insights/beestest/input/beestest.csv'
+    assert full_name == 's3://jornaya-dev-us-east-1-aida-insights/beestest/input/beestest.csv'
 
 
 def test_build_input_csv_file_name_returns_correct_qa_env_name():
     full_name = build_input_csv_file_name(Environments.QA, "beestest")
-    assert full_name == 'S3://jornaya-qa-us-east-1-aida-insights/beestest/input/beestest.csv'
+    assert full_name == 's3://jornaya-qa-us-east-1-aida-insights/beestest/input/beestest.csv'
 
 
 def test_build_input_csv_file_name_returns_correct_staging_env_name():
     full_name = build_input_csv_file_name(Environments.STAGING, "beestest")
-    assert full_name == 'S3://jornaya-staging-us-east-1-aida-insights/beestest/input/beestest.csv'
+    assert full_name == 's3://jornaya-staging-us-east-1-aida-insights/beestest/input/beestest.csv'
 
 
 def test_build_input_csv_file_name_returns_correct_prod_env_name():
     full_name = build_input_csv_file_name(Environments.PROD, "beestest")
-    assert full_name == 'S3://jornaya-prod-us-east-1-aida-insights/beestest/input/beestest.csv'
+    assert full_name == 's3://jornaya-prod-us-east-1-aida-insights/beestest/input/beestest.csv'
 
 
 def test_build_input_csv_file_name_returns_local_env_name_as_samples_directory():
@@ -101,7 +102,7 @@ def test_process_input_file_end_to_end(spark_session, tmpdir, monkeypatch):
     assert extracted_row_values == expected_rows
 
 
-def test_process_input_file_throws_analysis_exception_with_missing_input_file(spark_session, tmpdir, monkeypatch):
+def test_process_input_file_throws_analysis_exception_with_missing_input_file(spark_session, monkeypatch):
     mock_logger = mock.Mock()
     # mock csv file name function to return invalid path
     monkeypatch.setattr("jobs.input.input_processing.build_input_csv_file_name", lambda x, y: "invalid_file_name")
@@ -120,3 +121,14 @@ def test_process_input_file_with_invalid_csv_file_format_throws_java_error(spark
     with pytest.raises(py4j.protocol.Py4JJavaError):
         result_df = process_input_file(spark_session, mock_logger, "beestest", "unit_test")
         result_df.collect()
+
+
+def input_csv_transformed_schema():
+    # record_id, input_id, input_id_type, as_of_time, has_error, error_message
+    return StructType(
+        [StructField(InputColumnNames.RECORD_ID, LongType(), True),
+         StructField(InputColumnNames.INPUT_ID, StringType(), True),
+         StructField(InputColumnNames.INPUT_ID_TYPE, StringType(), True),
+         StructField(InputColumnNames.AS_OF_TIME, StringType(), True),
+         StructField(InputColumnNames.HAS_ERROR, BooleanType(), True),
+         StructField(InputColumnNames.ERROR_MESSAGE, StringType(), True)])

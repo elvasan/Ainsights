@@ -15,6 +15,10 @@ else:
 
 
 def main():
+    """
+    Main entry point to our application. This method will create the Spark Session, grab the underlying JVM logger,
+    get our job arguments as a Dict and run the analyze method as our PySpark job.
+    """
     parser = argparse.ArgumentParser(description='Run a PySpark job')
     parser.add_argument('--job-args',
                         nargs='*',
@@ -28,6 +32,7 @@ def main():
         job_args = {a[0]: a[1] for a in job_args_tuples}
 
     spark_session = SparkSession.builder.appName("aida-insights").getOrCreate()
+    spark_session.sparkContext.setLogLevel("warn")
 
     # this will log to the console but not to files.
     log4j_logger = spark_session._jvm.org.apache.log4j  # pylint:disable=protected-access
