@@ -73,13 +73,13 @@ def input_csv_schema():
     # record_id, phone_1, phone_2, phone_3, email_1, email_2, email_3, lead_1, lead_2, lead_3, as_of_time
     return StructType(
         [StructField(InputColumnNames.RECORD_ID, LongType(), False),
-         StructField("phone_1", StringType(), True),
-         StructField("phone_2", StringType(), True),
-         StructField("phone_3", StringType(), True),
-         StructField("email_1", StringType(), True),
-         StructField("email_2", StringType(), True),
-         StructField("email_3", StringType(), True),
-         StructField("lead_1", StringType(), True),
-         StructField("lead_2", StringType(), True),
-         StructField("lead_3", StringType(), True),
-         StructField(InputColumnNames.AS_OF_TIME, StringType(), True)])
+         StructField("phone_1", StringType()),
+         StructField("phone_2", StringType()),
+         StructField("phone_3", StringType()),
+         StructField("email_1", StringType()),
+         StructField("email_2", StringType()),
+         StructField("email_3", StringType()),
+         StructField("lead_1", StringType()),
+         StructField("lead_2", StringType()),
+         StructField("lead_3", StringType()),
+         StructField(InputColumnNames.AS_OF_TIME, StringType())])

@@ -5,7 +5,7 @@ import pytest
 from jobs.output.output_processing import get_classifications_as_dictionary, transform_scoring_columns_for_output, \
     build_output_csv_folder_name
 from shared.utilities import GenericColumnNames, Environments, ClassificationCategoryDisplayNames, \
-    ClassificationCategoryAbbreviations, InputColumnNames, OutputFileNames, ClassificationColumnNames
+    ClassificationCategoryAbbreviations, InputColumnNames, OutputFileNames, ClassificationSubcategory
 
 # define mark (need followup if need this)
 spark_session_enabled = pytest.mark.usefixtures("spark_session")
@@ -102,9 +102,9 @@ def define_classification_subcategory_df(spark_session):
                       ClassificationCategoryDisplayNames.EDUCATION, 0),
                      (9, 1, ClassificationCategoryAbbreviations.OTHER,
                       ClassificationCategoryDisplayNames.OTHER, 0)]
-    col_names = [ClassificationColumnNames.SUBCATEGORY_KEY, ClassificationColumnNames.CATEGORY_KEY,
-                 ClassificationColumnNames.SUBCATEGORY_NAME, ClassificationColumnNames.DISPLAY_NAME,
-                 ClassificationColumnNames.INSERTED_TIMESTAMP]
+    col_names = [ClassificationSubcategory.CLASSIF_SUBCATEGORY_KEY, ClassificationSubcategory.CLASSIF_CATEGORY_KEY,
+                 ClassificationSubcategory.SUBCATEGORY_CD, ClassificationSubcategory.SUBCATEGORY_DISPLAY_NM,
+                 ClassificationSubcategory.INSERT_TS]
     return spark_session.createDataFrame(raw_hash_rows, col_names)
 
 

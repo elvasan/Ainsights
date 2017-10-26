@@ -1,6 +1,6 @@
 from pyspark.sql.functions import col
 
-from shared.utilities import GenericColumnNames, Environments, ClassificationColumnNames, InputColumnNames, \
+from shared.utilities import GenericColumnNames, Environments, ClassificationSubcategory, InputColumnNames, \
     OutputFileNames
 
 
@@ -23,9 +23,9 @@ def get_classifications_as_dictionary(classify_subcategory_df):
     :param classify_subcategory_df: The subcategory table as a DataFrame
     :return: A Dict containing subcategory name and display name
     """
-    row_list = [[i.subcategory_nm, i.display_nm] for i in
-                classify_subcategory_df.select(ClassificationColumnNames.SUBCATEGORY_NAME,
-                                               ClassificationColumnNames.DISPLAY_NAME).collect()]
+    row_list = [[i.subcategory_cd, i.subcategory_display_nm] for i in
+                classify_subcategory_df.select(ClassificationSubcategory.SUBCATEGORY_CD,
+                                               ClassificationSubcategory.SUBCATEGORY_DISPLAY_NM).collect()]
     class_dict = dict(row_list)
     # add in record_id mapping
     class_dict[InputColumnNames.RECORD_ID] = GenericColumnNames.RECORD_ID

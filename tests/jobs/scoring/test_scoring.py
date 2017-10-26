@@ -2,7 +2,7 @@ import pytest
 from pyspark.sql.types import StructField, StructType, StringType, LongType
 
 from jobs.scoring.scoring import score_file, flatten_subcategories
-from shared.utilities import ClassificationColumnNames, InputColumnNames, ClassificationCategoryAbbreviations
+from shared.utilities import ClassificationSubcategory, InputColumnNames, ClassificationCategoryAbbreviations
 
 # define mark (need followup if need this)
 spark_session_enabled = pytest.mark.usefixtures("spark_session")
@@ -22,13 +22,14 @@ def test_flatten_subcategories_returns_rows_with_key_and_abbreviation(spark_sess
         [8, 0, 0, 0, 0, 0, 0, 0, 1, 0],
         [9, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     ]
-    expected_cols = [ClassificationColumnNames.SUBCATEGORY_KEY, ClassificationCategoryAbbreviations.AUTO_SALES,
+    expected_cols = [ClassificationSubcategory.CLASSIF_SUBCATEGORY_KEY, ClassificationCategoryAbbreviations.AUTO_SALES,
                      ClassificationCategoryAbbreviations.EDUCATION, ClassificationCategoryAbbreviations.INSURANCE,
                      ClassificationCategoryAbbreviations.FINANCIAL_SERVICES,
                      ClassificationCategoryAbbreviations.REAL_ESTATE,
                      ClassificationCategoryAbbreviations.JOBS, ClassificationCategoryAbbreviations.LEGAL,
                      ClassificationCategoryAbbreviations.HOME_SERVICES, ClassificationCategoryAbbreviations.OTHER]
-    extracted_row_values = extract_rows_for_col(result_df, expected_cols, ClassificationColumnNames.SUBCATEGORY_KEY)
+    extracted_row_values = extract_rows_for_col(result_df, expected_cols,
+                                                ClassificationSubcategory.CLASSIF_SUBCATEGORY_KEY)
     assert sorted(result_df.schema.names) == sorted(expected_cols)
     assert expected_results == extracted_row_values
 
@@ -123,9 +124,9 @@ def define_classification_subcategory_df(spark_session):
                      (7, 1, ClassificationCategoryAbbreviations.LEGAL, 'Legal', 0),
                      (8, 1, ClassificationCategoryAbbreviations.HOME_SERVICES, 'Home Services', 0),
                      (9, 1, ClassificationCategoryAbbreviations.OTHER, 'Other', 0)]
-    col_names = [ClassificationColumnNames.SUBCATEGORY_KEY, ClassificationColumnNames.CATEGORY_KEY,
-                 ClassificationColumnNames.SUBCATEGORY_NAME,
-                 ClassificationColumnNames.DISPLAY_NAME, ClassificationColumnNames.INSERTED_TIMESTAMP]
+    col_names = [ClassificationSubcategory.CLASSIF_SUBCATEGORY_KEY, ClassificationSubcategory.CLASSIF_CATEGORY_KEY,
+                 ClassificationSubcategory.SUBCATEGORY_CD,
+                 ClassificationSubcategory.SUBCATEGORY_DISPLAY_NM, ClassificationSubcategory.INSERT_TS]
     return spark_session.createDataFrame(raw_hash_rows, col_names)
 
 
@@ -134,7 +135,7 @@ def scoring_input_schema():
     csv_schema = StructType(
         [StructField(InputColumnNames.RECORD_ID, LongType(), False),
          StructField(InputColumnNames.INPUT_ID, StringType(), True),
-         StructField(ClassificationColumnNames.SUBCATEGORY_KEY, StringType(), True)])
+         StructField(ClassificationSubcategory.CLASSIF_SUBCATEGORY_KEY, StringType(), True)])
     return csv_schema
 
 

@@ -30,21 +30,35 @@ class OutputFileNames:  # pylint:disable=too-few-public-methods
     PRODUCT_NAME = 'aidainsights'
 
 
-class ClassificationSchemaNames:  # pylint:disable=too-few-public-methods
-    LEAD = "classif_lead"
-    SET_ELEMENT_XREF = "classif_set_element_xref"
-    SUBCATEGORY = "classif_subcategory"
-
-
 class ClassificationColumnNames:  # pylint:disable=too-few-public-methods
-    SUBCATEGORY_KEY = "classif_subcategory_key"
-    CATEGORY_KEY = "classif_category_key"
-    ELEMENT_KEY = "classif_element_key"
-    SET_KEY = "classif_set_key"
-    SUBCATEGORY_NAME = "subcategory_nm"
-    DISPLAY_NAME = "display_nm"
-    CLASSIF_TIMESTAMP = "classif_ts"
-    INSERTED_TIMESTAMP = "inserted_ts"
+    SUBCATEGORY_CD = "subcategory_cd"
+    CLASSIF_SUBCATEGORY_KEY = "classif_subcategory_key"
+    CLASSIF_CATEGORY_KEY = "classif_category_key"
+    CLASSIF_OWNER_NM = "classif_owner_nm"
+    INSERT_JOB_RUN_ID = "insert_job_run_id"
+    INSERT_BATCH_RUN_ID = "insert_batch_run_id"
+    LOAD_ACTION_IND = "load_action_ind"
+    CLASSIF_SET_KEY = "classif_set_key"
+    SUBCATEGORY_DISPLAY_NM = "subcategory_display_nm"
+    INSERT_TS = "insert_ts"
+
+
+class ClassificationLead(ClassificationColumnNames):  # pylint:disable=too-few-public-methods
+    SCHEMA_NAME = "classif_lead"
+    TOKEN = "token"
+
+
+class ClassificationSetElementXref(ClassificationColumnNames):
+    SCHEMA_NAME = "classif_set_element_xref"
+    CLASSIF_ELEMENT_KEY = "classif_element_key"
+    ELEMENT_CD = "element_cd"
+    ELEMENT_DISPLAY_NM = "element_display_nm"
+    CATEGORY_CD = "category_cd"
+    CATEGORY_DISPL_NM = "category_displ_nm"
+
+
+class ClassificationSubcategory(ClassificationColumnNames):
+    SCHEMA_NAME = "classif_subcategory"
 
 
 class ClassificationCategoryAbbreviations:  # pylint:disable=too-few-public-methods
