@@ -20,12 +20,8 @@ lint:
 unit:
   stage: unit
   before_script:
-    - apk add --update openjdk8 bash
+    - apk add --update bash
     - pip install -r requirements.txt
-    - echo $JAVA_HOME
-    - echo $PYSPARK_PYTHON
-    - echo $PYSPARK_DRIVER_PYTHON
-    - echo $SPARK_HOME
   script:
     - python -m pytest
   except:
