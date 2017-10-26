@@ -48,7 +48,7 @@ class ClassificationLead(ClassificationColumnNames):  # pylint:disable=too-few-p
     TOKEN = "token"
 
 
-class ClassificationSetElementXref(ClassificationColumnNames):
+class ClassificationSetElementXref(ClassificationColumnNames):  # pylint:disable=too-few-public-methods
     SCHEMA_NAME = "classif_set_element_xref"
     CLASSIF_ELEMENT_KEY = "classif_element_key"
     ELEMENT_CD = "element_cd"
@@ -57,7 +57,7 @@ class ClassificationSetElementXref(ClassificationColumnNames):
     CATEGORY_DISPL_NM = "category_displ_nm"
 
 
-class ClassificationSubcategory(ClassificationColumnNames):
+class ClassificationSubcategory(ClassificationColumnNames):  # pylint:disable=too-few-public-methods
     SCHEMA_NAME = "classif_subcategory"
 
 

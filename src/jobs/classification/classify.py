@@ -1,5 +1,5 @@
-from shared.utilities import Environments, ClassificationLead, ClassificationSetElementXref, ClassificationSubcategory, \
-    InputColumnNames
+from shared.utilities import Environments, ClassificationLead, ClassificationSetElementXref, \
+    ClassificationSubcategory, InputColumnNames
 
 
 def classify(spark_session, logger, input_df, environment):
