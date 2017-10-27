@@ -32,7 +32,7 @@ def main():
         job_args = {a[0]: a[1] for a in job_args_tuples}
 
     spark_session = SparkSession.builder \
-        .appName("aida-insights") \
+        .appName("AIDA-INSIGHTS") \
         .config("spark.sql.warehouse.dir", "../target/spark-warehouse") \
         .getOrCreate()
 
@@ -43,14 +43,14 @@ def main():
     logger = log4j_logger.LogManager.getLogger("aida-insights")
 
     start = time.time()
-    logger.info("AIDA-INSIGHTS: START TIME {start_time}".format(start_time=start))
+    logger.info("START TIME {start_time}".format(start_time=start))
     init.analyze(spark_session, logger, **job_args)
     end = time.time()
-    logger.info("AIDA-INSIGHTS: END TIME {end_time}".format(end_time=end))
+    logger.info("END TIME {end_time}".format(end_time=end))
 
     logger.info("\nExecution of AIDA-INSIGHTS for client %s took %s seconds" % (job_args["client_name"], end - start))
 
-    logger.info("AIDA-INSIGHTS: STOPPING APPLICATION")
+    logger.info("STOPPING APPLICATION")
     spark_session.stop()
 
 
