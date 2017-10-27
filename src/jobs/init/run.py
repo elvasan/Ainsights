@@ -37,7 +37,7 @@ def analyze(spark, logger, **job_args):
     logger.debug(classification_data_frame.show(15, True))
 
     logger.info(logger_prefix + "SCORING RESULTS")
-    classify_subcategory_df = get_classification_subcategory_df(spark, environment)
+    classify_subcategory_df = get_classification_subcategory_df(spark, environment, logger)
     scored_data_frame = score_file(classify_subcategory_df, classification_data_frame)
     logger.debug(scored_data_frame.show(15, True))
 

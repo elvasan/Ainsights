@@ -12,11 +12,11 @@ def classify(spark_session, logger, input_df, environment):
     :param environment: The current environment (local, dev, qa, prod)
     :return: A DataFrame that contains the leads from the input and their classifications
     """
-    lead_df = get_classification_lead_df(spark_session, environment)
+    lead_df = get_classification_lead_df(spark_session, environment, logger)
     logger.debug('Printing classif_lead DataFrame.')
     logger.debug(lead_df.show(15, True))
 
-    classification_set_df = get_classification_set_elem_xref_df(spark_session, environment)
+    classification_set_df = get_classification_set_elem_xref_df(spark_session, environment, logger)
     logger.debug('Printing classif_set_elem_xref DataFrame.')
     logger.debug(classification_set_df.show(15, True))
 
@@ -79,7 +79,7 @@ def join_input_to_classification_set_df(input_df, classification_set_df):
               InputColumnNames.AS_OF_TIME)
 
 
-def get_classification_lead_df(spark_session, environment):
+def get_classification_lead_df(spark_session, environment, logger):
     """
     Returns a DataFrame consisting of the classification leads table.
     :param spark_session: Spark session created from our main file.
@@ -87,10 +87,11 @@ def get_classification_lead_df(spark_session, environment):
     :return: The Classification Lead table as a DataFrame
     """
     schema_location = get_classification_schema_location(environment, ClassificationLead.SCHEMA_NAME)
+    logger.info("Reading classif_lead file from {location}".format(location=schema_location))
     return load_parquet_into_df(spark_session, schema_location)
 
 
-def get_classification_set_elem_xref_df(spark_session, environment):
+def get_classification_set_elem_xref_df(spark_session, environment, logger):
     """
     Returns a DataFrame consisting of the classification set_element_xref table.
     :param spark_session: Spark session created from our main file.
@@ -98,10 +99,11 @@ def get_classification_set_elem_xref_df(spark_session, environment):
     :return: The Classification Set Element XREF table as a DataFrame
     """
     schema_location = get_classification_schema_location(environment, ClassificationSetElementXref.SCHEMA_NAME)
+    logger.info("Reading classif_set_element_xref file from {location}".format(location=schema_location))
     return load_parquet_into_df(spark_session, schema_location)
 
 
-def get_classification_subcategory_df(spark_session, environment):
+def get_classification_subcategory_df(spark_session, environment, logger):
     """
     Returns a DataFrame consisting of the classification subcategory table.
     :param spark_session: Spark session created from our main file.
@@ -109,6 +111,7 @@ def get_classification_subcategory_df(spark_session, environment):
     :return: The Classification Subcategory table as a DataFrame
     """
     schema_location = get_classification_schema_location(environment, ClassificationSubcategory.SCHEMA_NAME)
+    logger.info("Reading classif_subcategory file from {location}".format(location=schema_location))
     return load_parquet_into_df(spark_session, schema_location)
 
 
