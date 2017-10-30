@@ -13,22 +13,19 @@ def classify(spark_session, logger, input_df, environment):
     :return: A DataFrame that contains the leads from the input and their classifications
     """
     lead_df = get_classification_lead_df(spark_session, environment, logger)
-    logger.debug('Printing classif_lead DataFrame.')
-    logger.debug(lead_df.show(15, True))
+    logger.info("LEAD_DF PARTITION SIZE: {size}".format(size=lead_df.rdd.getNumPartitions()))
 
     classification_set_df = get_classification_set_elem_xref_df(spark_session, environment, logger)
-    logger.debug('Printing classif_set_elem_xref DataFrame.')
-    logger.debug(classification_set_df.show(15, True))
+    logger.info(
+        "CLASSIFICATION_SET_DF PARTITION SIZE: {size}".format(size=classification_set_df.rdd.getNumPartitions()))
 
     # Transform the input DataFrame by joining it to the classif_lead DataFrame
     input_lead_df = join_input_to_lead_df(input_df, lead_df)
-    logger.debug('Printing input joined to classif_lead DataFrame.')
-    logger.debug(input_lead_df.show(15, True))
+    logger.info("INPUT_LEAD_DF PARTITION SIZE: {size}".format(size=input_lead_df.rdd.getNumPartitions()))
 
     # Transform the input and lead DataFrame by joining it to the classif_set DataFrame
     input_lead_set_df = join_input_to_classification_set_df(input_lead_df, classification_set_df)
-    logger.debug('Printing transformed input joined to classif_set DataFrame.')
-    logger.debug(input_lead_set_df.show(15, True))
+    logger.info("INPUT_LEAD_SET_DF PARTITION SIZE: {size}".format(size=input_lead_set_df.rdd.getNumPartitions()))
 
     return input_lead_set_df
 
@@ -41,11 +38,14 @@ def join_input_to_lead_df(input_df, lead_df):
     :return: A DataFrame consisting of the initial input DataFrame joined to the Classification Lead DataFrame minus
     timestamps.
     """
-    join_expression = input_df.input_id == lead_df.token
-    return input_df \
+    modified_input = input_df.select(
+        InputColumnNames.RECORD_ID,
+        InputColumnNames.INPUT_ID
+    )
+    join_expression = modified_input.input_id == lead_df.token
+    return modified_input \
         .join(lead_df, join_expression, "left") \
-        .drop(InputColumnNames.INPUT_ID_TYPE,
-              ClassificationLead.TOKEN)
+        .drop(ClassificationLead.TOKEN)
 
 
 def join_input_to_classification_set_df(input_df, classification_set_df):
@@ -57,26 +57,11 @@ def join_input_to_classification_set_df(input_df, classification_set_df):
     :return: A DataFrame consisting of the transformed input DataFrame joined to the Classification Set DataFrame minus
     unnecessary columns.
     """
-    join_expression = input_df.classif_set_key == classification_set_df.classif_set_key
-    return input_df \
+    modified_input = input_df.drop(InputColumnNames.INPUT_ID)
+    join_expression = modified_input.classif_set_key == classification_set_df.classif_set_key
+    return modified_input \
         .join(classification_set_df, join_expression, "left") \
-        .drop(ClassificationSetElementXref.CLASSIF_SET_KEY,
-              ClassificationSetElementXref.CLASSIF_ELEMENT_KEY,
-              ClassificationSetElementXref.CLASSIF_CATEGORY_KEY,
-              ClassificationSetElementXref.ELEMENT_CD,
-              ClassificationSetElementXref.ELEMENT_DISPLAY_NM,
-              ClassificationSetElementXref.SUBCATEGORY_CD,
-              ClassificationSetElementXref.SUBCATEGORY_DISPLAY_NM,
-              ClassificationSetElementXref.CATEGORY_CD,
-              ClassificationSetElementXref.CATEGORY_DISPL_NM,
-              ClassificationSetElementXref.CLASSIF_OWNER_NM,
-              ClassificationSetElementXref.INSERT_TS,
-              ClassificationSetElementXref.INSERT_JOB_RUN_ID,
-              ClassificationSetElementXref.INSERT_BATCH_RUN_ID,
-              ClassificationSetElementXref.LOAD_ACTION_IND,
-              InputColumnNames.HAS_ERROR,
-              InputColumnNames.ERROR_MESSAGE,
-              InputColumnNames.AS_OF_TIME)
+        .drop(ClassificationLead.CLASSIF_SET_KEY)
 
 
 def get_classification_lead_df(spark_session, environment, logger):
@@ -100,7 +85,9 @@ def get_classification_set_elem_xref_df(spark_session, environment, logger):
     """
     schema_location = get_classification_schema_location(environment, ClassificationSetElementXref.SCHEMA_NAME)
     logger.info("Reading classif_set_element_xref file from {location}".format(location=schema_location))
-    return load_parquet_into_df(spark_session, schema_location)
+    classification_set_elem_xref_df = load_parquet_into_df(spark_session, schema_location)
+    return classification_set_elem_xref_df.select(classification_set_elem_xref_df.classif_set_key,
+                                                  classification_set_elem_xref_df.classif_subcategory_key)
 
 
 def get_classification_subcategory_df(spark_session, environment, logger):
@@ -112,7 +99,10 @@ def get_classification_subcategory_df(spark_session, environment, logger):
     """
     schema_location = get_classification_schema_location(environment, ClassificationSubcategory.SCHEMA_NAME)
     logger.info("Reading classif_subcategory file from {location}".format(location=schema_location))
-    return load_parquet_into_df(spark_session, schema_location)
+    classif_subcategory_df = load_parquet_into_df(spark_session, schema_location)
+    return classif_subcategory_df.select(classif_subcategory_df.classif_subcategory_key,
+                                         classif_subcategory_df.subcategory_cd,
+                                         classif_subcategory_df.subcategory_display_nm)
 
 
 def get_classification_schema_location(environment, schema_name):

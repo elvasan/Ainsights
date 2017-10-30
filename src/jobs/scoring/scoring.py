@@ -1,4 +1,4 @@
-from shared.utilities import ClassificationSubcategory, InputColumnNames
+from shared.utilities import ClassificationSubcategory
 
 
 def score_file(classification_subcategories_df, classified_inputs_df):
@@ -13,10 +13,7 @@ def score_file(classification_subcategories_df, classified_inputs_df):
     # JOIN on classif_subcategory_key and join in on flatted results.
     score_join = (classified_inputs_df.classif_subcategory_key == subcategories_flat_df.classif_subcategory_key)
     return classified_inputs_df.join(subcategories_flat_df, score_join, "left_outer") \
-        .drop(ClassificationSubcategory.CLASSIF_SUBCATEGORY_KEY,
-              ClassificationSubcategory.CLASSIF_CATEGORY_KEY,
-              ClassificationSubcategory.INSERT_TS,
-              InputColumnNames.INPUT_ID) \
+        .drop(ClassificationSubcategory.CLASSIF_SUBCATEGORY_KEY) \
         .fillna(0)
 
 

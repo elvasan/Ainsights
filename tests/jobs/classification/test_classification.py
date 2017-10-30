@@ -69,14 +69,11 @@ def test_multiple_join_input_to_lead_df_with_no_matching_lead_id_returns_null_fo
     input_set = [(1, 'LLAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA', 'leadid', '10/17/2017', False, ''),
                  (2, 'LLBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB', 'leadid', '10/17/2017', False, '')]
     input_df = spark_session.createDataFrame(input_set, expected_input_schema())
-    input_df.show(15, True)
 
     lead_row = [('LLAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA', '5')]
     lead_dataframe = spark_session.createDataFrame(lead_row, classification_lead_schema())
-    lead_dataframe.show(15, True)
 
     result = classify.join_input_to_lead_df(input_df, lead_dataframe)
-    result.show(15, True)
     extracted_results = extract_rows_for_col(result, ClassificationSetElementXref.CLASSIF_SET_KEY)
     expected_col_results = [None, '5']
 
@@ -85,32 +82,26 @@ def test_multiple_join_input_to_lead_df_with_no_matching_lead_id_returns_null_fo
 
 
 def test_join_input_to_classification_set_df_returns_expected_columns(spark_session):
-    input_row = [(1, '10/17/2017', False, '', 'LLAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA', 5)]
+    input_row = [(1, 'LLAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA', 5)]
     input_df = spark_session.createDataFrame(input_row, expected_input_lead_transformed_schema())
-    input_df.show(15, True)
 
-    classification_row = [(5, 9, "", "", 1, "auto_sales", "Auto Sales", 1, "", "", '10/17/2017', "", 1, 2, "")]
+    classification_row = [(5, 1)]
     classification_df = spark_session.createDataFrame(classification_row, classification_set_elem_xref_schema())
-    classification_df.show(15, True)
 
     result = classify.join_input_to_classification_set_df(input_df, classification_df)
-    result.show(15, True)
 
     assert sorted(expected_classification_result_schema().names) == sorted(result.schema.names)
 
 
 def test_join_input_to_classification_set_df_with_null_returns_expected_columns(spark_session):
-    input_row = [(1, '10/17/2017', False, '', 'LLAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA', 5),
-                 (2, '10/17/2017', False, '', 'LLBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB', None)]
+    input_row = [(1, 'LLAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA', 5),
+                 (2, 'LLBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB', None)]
     input_df = spark_session.createDataFrame(input_row, expected_input_lead_transformed_schema())
-    input_df.show(15, True)
 
-    classification_row = [(5, 9, "", "", 1, "auto_sales", "Auto Sales", 1, "", "", '10/17/2017', "", 1, 2, "")]
+    classification_row = [(5, 1)]
     classification_df = spark_session.createDataFrame(classification_row, classification_set_elem_xref_schema())
-    classification_df.show(15, True)
 
     result = classify.join_input_to_classification_set_df(input_df, classification_df)
-    result.show(15, True)
     extracted_results = extract_rows_for_col(result, ClassificationSetElementXref.CLASSIF_SUBCATEGORY_KEY)
     expected_col_results = [None, 1]
 

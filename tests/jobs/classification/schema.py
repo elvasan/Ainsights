@@ -13,20 +13,7 @@ def classification_lead_schema():
 def classification_set_elem_xref_schema():
     return StructType(
         [StructField(ClassificationSetElementXref.CLASSIF_SET_KEY, StringType()),
-         StructField(ClassificationSetElementXref.CLASSIF_ELEMENT_KEY, LongType()),
-         StructField(ClassificationSetElementXref.ELEMENT_CD, StringType()),
-         StructField(ClassificationSetElementXref.ELEMENT_DISPLAY_NM, StringType()),
-         StructField(ClassificationSetElementXref.CLASSIF_SUBCATEGORY_KEY, LongType()),
-         StructField(ClassificationSetElementXref.SUBCATEGORY_CD, StringType()),
-         StructField(ClassificationSetElementXref.SUBCATEGORY_DISPLAY_NM, StringType()),
-         StructField(ClassificationSetElementXref.CLASSIF_CATEGORY_KEY, LongType()),
-         StructField(ClassificationSetElementXref.CATEGORY_CD, StringType()),
-         StructField(ClassificationSetElementXref.CATEGORY_DISPL_NM, StringType()),
-         StructField(ClassificationSetElementXref.INSERT_TS, StringType()),
-         StructField(ClassificationSetElementXref.CLASSIF_OWNER_NM, StringType()),
-         StructField(ClassificationSetElementXref.INSERT_JOB_RUN_ID, IntegerType()),
-         StructField(ClassificationSetElementXref.INSERT_BATCH_RUN_ID, IntegerType()),
-         StructField(ClassificationSetElementXref.LOAD_ACTION_IND, StringType())
+         StructField(ClassificationSetElementXref.CLASSIF_SUBCATEGORY_KEY, LongType())
          ])
 
 
@@ -57,9 +44,6 @@ def expected_input_schema():
 def expected_input_lead_transformed_schema():
     return StructType(
         [StructField(InputColumnNames.RECORD_ID, LongType()),
-         StructField(InputColumnNames.AS_OF_TIME, StringType()),
-         StructField(InputColumnNames.HAS_ERROR, BooleanType()),
-         StructField(InputColumnNames.ERROR_MESSAGE, StringType()),
          StructField(InputColumnNames.INPUT_ID, StringType()),
          StructField(ClassificationLead.CLASSIF_SET_KEY, StringType())])
 
@@ -67,6 +51,5 @@ def expected_input_lead_transformed_schema():
 def expected_classification_result_schema():
     return StructType(
         [StructField(InputColumnNames.RECORD_ID, LongType()),
-         StructField(InputColumnNames.INPUT_ID, StringType()),
          StructField(ClassificationSetElementXref.CLASSIF_SUBCATEGORY_KEY, StringType())
          ])
