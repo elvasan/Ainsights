@@ -15,8 +15,6 @@ do
   esac
 done
 
-
-
 provisionCluster() {
   cluster_id=$(aws emr create-cluster \
             --applications Name=Hadoop Name=Spark \
@@ -24,10 +22,9 @@ provisionCluster() {
             --release-label emr-5.8.0 \
             --log-uri 's3n://aws-logs-794223901232-us-east-1/elasticmapreduce/' \
             --steps '[{"Args":["spark-submit","--deploy-mode","cluster","--py-files","s3://jornaya-'${env}'-us-east-1-aida-insights/pyspark/jobs.zip","s3://jornaya-'${env}'-us-east-1-aida-insights/pyspark/main.py","--job-args","environment='${env}'","client_name='${client_name}'"],"Type":"CUSTOM_JAR","ActionOnFailure":"TERMINATE_CLUSTER","Jar":"command-runner.jar","Properties":"","Name":"Spark application"}]' \
-            --instance-count 5 \
-            --instance-type c4.8xlarge \
-            --configurations '[{"Classification":"spark-env","Properties":{},"Configurations":[{"Classification":"export","Properties":{"PYSPARK_PYTHON":"python34"},"Configurations":[]}]}]' \
-            --name 'aida-insights scripted cluster test' \
+            --instance-groups '[{"InstanceCount":4,"BidPrice":"2.15","EbsConfiguration":{"EbsBlockDeviceConfigs":[{"VolumeSpecification":{"SizeInGB":1000,"VolumeType":"gp2"},"VolumesPerInstance":1}],"EbsOptimized":true},"InstanceGroupType":"CORE","InstanceType":"r4.8xlarge","Name":"Core - 2"},{"InstanceCount":1,"BidPrice":"0.55","EbsConfiguration":{"EbsBlockDeviceConfigs":[{"VolumeSpecification":{"SizeInGB":200,"VolumeType":"gp2"},"VolumesPerInstance":1}],"EbsOptimized":true},"InstanceGroupType":"MASTER","InstanceType":"r4.2xlarge","Name":"Master - 1"}]' \
+            --configurations '[{"Classification":"spark-env","Properties":{},"Configurations":[{"Classification":"export","Properties":{"PYSPARK_PYTHON":"python34"},"Configurations":[]}]},{"Classification":"spark","Properties":{"maximizeResourceAllocation":"true"},"Configurations":[]}]' \
+            --name 'aida-insights select_classification' \
             --service-role EMR_Role \
             --region us-east-1 \
             --profile jornaya-${env} \
