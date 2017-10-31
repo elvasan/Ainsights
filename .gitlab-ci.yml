@@ -12,10 +12,9 @@ lint:
     - pip install -r requirements.txt
   stage: lint
   script:
-    - prospector
+    - PYTHONPATH=src prospector
   except:
     - /.*working.*/
-  allow_failure: true
 
 unit:
   stage: unit
@@ -26,7 +25,6 @@ unit:
     - python -m pytest
   except:
     - /.*working.*/
-  allow_failure: true
 
 artifactory:
   stage: package
