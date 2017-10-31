@@ -31,7 +31,12 @@ def main():
         job_args_tuples = [arg_str.split('=') for arg_str in args.job_args]
         job_args = {a[0]: a[1] for a in job_args_tuples}
 
-    spark_session = SparkSession.builder.appName("aida-insights").getOrCreate()
+    spark_session = SparkSession.builder \
+        .appName("aida-insights") \
+        .config("spark.sql.warehouse.dir", "../target/spark-warehouse") \
+        .getOrCreate()
+
+    # spark_session.sparkContext.setLogLevel("info")
 
     # this will log to the console but not to files.
     log4j_logger = spark_session._jvm.org.apache.log4j  # pylint:disable=protected-access
@@ -44,6 +49,9 @@ def main():
     logger.info("AIDA-INSIGHTS: END TIME {end_time}".format(end_time=end))
 
     logger.info("\nExecution of AIDA-INSIGHTS for client %s took %s seconds" % (job_args["client_name"], end - start))
+
+    logger.info("AIDA-INSIGHTS: STOPPING APPLICATION")
+    spark_session.stop()
 
 
 if __name__ == '__main__':

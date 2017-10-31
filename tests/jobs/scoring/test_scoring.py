@@ -36,15 +36,15 @@ def test_flatten_subcategories_returns_rows_with_key_and_abbreviation(spark_sess
 
 def test_score_file_transforms_to_single_values(spark_session):
     input_rows = [
-        (10, 'LLAAAAAA', 1),
-        (20, 'LLBBBBBB', 2),
-        (30, 'LLCCCCCC', 3),
-        (40, 'LLDDDDDD', 4),
-        (50, 'LLEEEEEE', 5),
-        (60, 'LLFFFFFF', 6),
-        (70, 'LLGGGGGG', 7),
-        (80, 'LLHHHHHH', 8),
-        (90, 'LLIIIIII', 9)]
+        (10, 1),
+        (20, 2),
+        (30, 3),
+        (40, 4),
+        (50, 5),
+        (60, 6),
+        (70, 7),
+        (80, 8),
+        (90, 9)]
     input_df = spark_session.createDataFrame(input_rows, scoring_input_schema())
     subcategory_df = define_classification_subcategory_df(spark_session)
     result_df = score_file(subcategory_df, input_df)
@@ -70,7 +70,7 @@ def test_score_file_transforms_to_single_values(spark_session):
 
 
 def test_score_file_returns_category_abbrev_column_values(spark_session):
-    input_rows = [(10, 'LLAAAAAA', 1)]
+    input_rows = [(10, 1)]
     input_df = spark_session.createDataFrame(input_rows, scoring_input_schema())
     subcategory_df = define_classification_subcategory_df(spark_session)
     result_df = score_file(subcategory_df, input_df)
@@ -85,9 +85,9 @@ def test_score_file_returns_category_abbrev_column_values(spark_session):
 
 def test_score_file_with_no_classification_in_row(spark_session):
     input_rows = [
-        (10, 'LLAAAAAA', 1),
-        (20, 'LLBBBBBB', None),  # no classification found
-        (30, 'LLCCCCCC', 3)]
+        (10, 1),
+        (20, None),  # no classification found
+        (30, 3)]
     input_df = spark_session.createDataFrame(input_rows, scoring_input_schema())
     subcategory_df = define_classification_subcategory_df(spark_session)
     result_df = score_file(subcategory_df, input_df)
@@ -134,7 +134,6 @@ def scoring_input_schema():
     # record_id, input_id, classif_subcategory_key
     csv_schema = StructType(
         [StructField(InputColumnNames.RECORD_ID, LongType(), False),
-         StructField(InputColumnNames.INPUT_ID, StringType(), True),
          StructField(ClassificationSubcategory.CLASSIF_SUBCATEGORY_KEY, StringType(), True)])
     return csv_schema
 
