@@ -1,16 +1,6 @@
-classif_set_key,classif_element_key,classif_subcategory_key,classif_category_key,inserted_ts
-ABC,1,9,1,1506844800
-DEF,2,8,1,1506844800
-GHI,3,7,1,1506844800
-JKL,4,6,1,1506844800
-MNO,5,5,1,1506844800
-PQR,6,4,1,1506844800
-STU,7,3,1,1506844800
-VWX,8,2,1,1506844800
-YZ1,9,1,1,1506844800
-234,10,9,1,1506844800
-567,11,8,1,1506844800
-890,12,7,1,1506844800
-AAA,13,6,1,1506844800
-BBB,14,5,1,1506844800
-CCC,15,4,1,1506844800
+classif_set_key,classif_element_key,element_cd,element_display_nm,classif_subcategory_key,subcategory_cd,subcategory_display_nm,classif_category_key,category_cd,category_displ_nm,insert_ts,classif_owner_nm,insert_job_run_id,insert_batch_run_id,load_action_ind
+ebfdded6ffea64dffe3721047a7c0cb2,13,financial_services_general,Financial Services - General,4,financial_services,Financial Services,1,Industry,Industry,2017-10-25 18:11:46.659,Jornaya Standard,1,1,i
+c4779926cf3b133d52537147c39e4bfe,1,auto_sales_general,Auto Sales - General,1,auto_sales,Auto Sales,1,Industry,Industry,2017-10-25 18:11:46.659,Jornaya Standard,1,1,i
+dae7f1996b5d56bb71e113355406a450,24,real_estate_real_estate,Real Estate - Real Estate,5,real_estate,Real Estate,1,Industry,Industry,2017-10-25 18:11:46.659,Jornaya Standard,1,1,i
+beae8990cbe7c4b5db70a76b62dc71b4,4,education_general,Education - General,2,education,Education,1,Industry,Industry,2017-10-25 18:11:46.659,Jornaya Standard,1,1,i
+487b034866bd6a415cac9363c5df7c8c,8,insurance_general,Insurance - General,3,insurance,Insurance,1,Industry,Industry,2017-10-25 18:11:46.659,Jornaya Standard,1,1,i

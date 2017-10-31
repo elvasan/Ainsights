@@ -1,10 +1,10 @@
-classif_subcategory_key,classif_category_key,subcategory_nm,display_nm
-1,1,auto_sales,Auto Sales
-2,1,education,Education
-3,1,insurance,Insurance
-4,1,financial_services,Financial Services
-5,1,real_estate,Real Estate
-6,1,jobs,Jobs
-7,1,legal,Legal
-8,1,home_services,Home Services
-9,1,other,Other
+classif_subcategory_key,classif_category_key,subcategory_cd,subcategory_display_nm,classif_owner_nm,insert_ts,insert_job_run_id,insert_batch_run_id,load_action_ind
+1,1,auto_sales,Auto Sales,Jornaya Standard,2017-10-25 18:10:39.942,1,1,i
+2,1,education,Education,Jornaya Standard,2017-10-25 18:10:39.942,1,1,i
+3,1,insurance,Insurance,Jornaya Standard,2017-10-25 18:10:39.942,1,1,i
+4,1,financial_services,Financial Services,Jornaya Standard,2017-10-25 18:10:39.942,1,1,i
+5,1,real_estate,Real Estate,Jornaya Standard,2017-10-25 18:10:39.942,1,1,i
+6,1,jobs,Jobs,Jornaya Standard,2017-10-25 18:10:39.942,1,1,i
+7,1,legal,Legal,Jornaya Standard,2017-10-25 18:10:39.942,1,1,i
+8,1,home_services,Home Services,Jornaya Standard,2017-10-25 18:10:39.942,1,1,i
+9,1,other,Other,Jornaya Standard,2017-10-25 18:10:39.942,1,1,i
