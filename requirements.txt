@@ -1,6 +1,6 @@
 # Production requirements
 pypandoc==1.4
-pyspark==2.2.0
+pyspark
 
 # Development requirements
 pytest==3.2.3
