@@ -1,3 +1,4 @@
+from jobs.input.input_processing import load_parquet_into_df
 from shared.utilities import Environments, ClassificationLead, ClassificationSetElementXref, \
     ClassificationSubcategory, InputColumnNames
 
@@ -118,13 +119,3 @@ def get_classification_schema_location(environment, schema_name):
     else:
         bucket_prefix = 's3://jornaya-{0}-{1}-prj/'.format(environment, Environments.AWS_REGION)
     return bucket_prefix + 'classification/' + schema_name + '/'
-
-
-def load_parquet_into_df(spark_session, file_location):
-    """
-    Loads a parquet file into a DataFrame.
-    :param spark_session: The spark context initialized in on the application start up
-    :param file_location: The absolute path to the parquet file
-    :return: A DataFrame from the parquet location
-    """
-    return spark_session.read.parquet(file_location)

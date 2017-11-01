@@ -110,3 +110,21 @@ class HashMappingColumnNames:  # pylint:disable=too-few-public-methods
     CANONICAL_HASH_VALUE = "canonical_hash_value"
     HASH_VALUE = "hash_value"
     HASH_TYPE_CD = "hash_type_cd"
+
+
+class PiiHashingColumnNames:  # pylint:disable=too-few-public-methods
+    RECORD_ID = 'record_id'
+    INPUT_ID_RAW = 'input_id_raw'
+    INPUT_ID = 'input_id'
+    INPUT_ID_TYPE = 'input_id_type'
+
+
+class ConsumerViewSchema:  # pylint:disable=too-few-public-methods
+    CONSUMER_VIEW_KEY = "consumer_view_key"
+    NODE_TYPE_CD = "node_type_cd"
+    VALUE = "value"
+    CLUSTER_ID = "cluster_id"
+    CREATION_TS = "creation_ts"
+    GENERATOR_ACCOUNT_ID = "generator_account_id"
+    GENERATOR_CAMPAIGN_KEY = "generator_campaign_key"
+    INSERTED_TS = "inserted_ts"

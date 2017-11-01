@@ -1,3 +1,4 @@
+from jobs.input.input_processing import load_parquet_into_df
 from shared.utilities import InputColumnNames, Environments, IdentifierTypes, HashMappingColumnNames
 
 
@@ -9,8 +10,7 @@ class PIIInternalColumnNames:  # pylint:disable=too-few-public-methods
 def transform_raw_inputs(spark, logger, input_df, environment):
     # get hash mapping dataframe
     hash_mapping_df = get_hash_mapping_df(spark, environment, logger)
-    transformed_df = populate_all_raw_inputs(input_df, hash_mapping_df)
-    return transformed_df
+    return populate_all_raw_inputs(input_df, hash_mapping_df)
 
 
 def populate_all_raw_inputs(input_df, hash_mapping_df):
@@ -63,17 +63,18 @@ def join_canonical_hash_values_to_phones_emails(input_df, canonical_hash_values)
     return result_df.join(canonical_hash_values, join_expression, "left") \
         .select(result_df.record_id,
                 result_df.input_id_raw,
-                result_df.input_id_type, HashMappingColumnNames.CANONICAL_HASH_VALUE)\
+                result_df.input_id_type,
+                HashMappingColumnNames.CANONICAL_HASH_VALUE) \
         .withColumnRenamed(HashMappingColumnNames.CANONICAL_HASH_VALUE, InputColumnNames.INPUT_ID)
 
 
 def transform_lead_values_input_id_column(input_df):
-    result_df = input_df.filter(input_df.input_id_type.isin([IdentifierTypes.LEADID])) \
-        .withColumn(InputColumnNames.INPUT_ID, input_df.input_id_raw).select(InputColumnNames.RECORD_ID,
-                                                                             InputColumnNames.INPUT_ID_RAW,
-                                                                             InputColumnNames.INPUT_ID_TYPE,
-                                                                             InputColumnNames.INPUT_ID)
-    return result_df
+    return input_df.filter(input_df.input_id_type.isin([IdentifierTypes.LEADID])) \
+        .withColumn(InputColumnNames.INPUT_ID, input_df.input_id_raw) \
+        .select(InputColumnNames.RECORD_ID,
+                InputColumnNames.INPUT_ID_RAW,
+                InputColumnNames.INPUT_ID_TYPE,
+                InputColumnNames.INPUT_ID)
 
 
 def lookup_canonical_hashes(hash_mapping_df, phones_emails_df):
@@ -86,12 +87,19 @@ def lookup_canonical_hashes(hash_mapping_df, phones_emails_df):
 
 def select_distinct_raw_hash_values_for_phones_emails(input_df):
     # get unique set of hashed_values of PHONES, EMAIL types only
-    result_df = input_df.filter(input_df.input_id_type.isin([IdentifierTypes.EMAIL, IdentifierTypes.PHONE])).select(
-        input_df.input_id_raw.alias(PIIInternalColumnNames.RAW_HASH_VALUE)).distinct()
-    return result_df
+    return input_df.filter(input_df.input_id_type.isin([IdentifierTypes.EMAIL, IdentifierTypes.PHONE])) \
+        .select(input_df.input_id_raw.alias(PIIInternalColumnNames.RAW_HASH_VALUE)) \
+        .distinct()
 
 
 def get_hash_mapping_df(spark_session, environment, logger):
+    """
+    Retrieves the hash mapping tables as a DataFrame consisting of two columns: canonical hash value and raw input value
+    :param spark_session: The Spark Session
+    :param environment: The current environment (local, dev, qa, prod)
+    :param logger: The application logger
+    :return: A DataFrame with two columns, canonical hash value and raw input value
+    """
     schema_location = get_hash_mapping_schema_location(environment)
     logger.info("Reading hash_mapping file from {location}".format(location=schema_location))
     hash_map_df = load_parquet_into_df(spark_session, schema_location)
@@ -101,12 +109,14 @@ def get_hash_mapping_df(spark_session, environment, logger):
 
 
 def get_hash_mapping_schema_location(environment):
+    """
+    Builds an absolute path to the hash mapping schema`
+
+    :param environment: The current environment (local, dev, qa, prod)
+    :return: A string for locating hash mapping parquet files.
+    """
     if environment == Environments.LOCAL:
         bucket_prefix = Environments.LOCAL_BUCKET_PREFIX
     else:
         bucket_prefix = 's3://jornaya-{0}-{1}-fdl/'.format(environment, Environments.AWS_REGION)
     return bucket_prefix + 'hash_mapping'
-
-
-def load_parquet_into_df(spark_session, file_location):
-    return spark_session.read.parquet(file_location)

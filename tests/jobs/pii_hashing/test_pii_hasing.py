@@ -1,9 +1,10 @@
 import pytest
+from pyspark.sql.types import StructField, StructType, StringType, LongType, BooleanType
+
 from jobs.pii_hashing.pii_hashing import get_hash_mapping_schema_location, \
     select_distinct_raw_hash_values_for_phones_emails, populate_all_raw_inputs, lookup_canonical_hashes, \
     transform_lead_values_input_id_column, join_canonical_hash_values_to_phones_emails, PIIInternalColumnNames
 from shared.utilities import Environments, IdentifierTypes, InputColumnNames, HashMappingColumnNames
-from pyspark.sql.types import StructField, StructType, StringType, LongType, BooleanType
 
 # define mark (need followup if need this)
 spark_session_enabled = pytest.mark.usefixtures("spark_session")
@@ -14,7 +15,7 @@ def test_get_hash_mapping_schema_location_returns_correct_dev_env_name():
     assert full_name == "s3://jornaya-dev-us-east-1-fdl/hash_mapping"
 
 
-def test_get_hash_mapping_schema_location_returns_correct_dev_env_name():
+def test_get_hash_mapping_schema_location_returns_correct_local_env_name():
     full_name = get_hash_mapping_schema_location(Environments.LOCAL)
     assert full_name == "../samples/hash_mapping"
 
@@ -94,9 +95,7 @@ def test_lookup_canonical_hashes_returns_only_matching_values(spark_session):
         ("CEGGGGGG", "EEGGGGGG"),
         ("CEFFFFFF", "EEFFFFFF")]
     hash_mapping_df = spark_session.createDataFrame(hash_mapping_rows, hash_mapping_schema())
-    # hash_mapping_df.show(20,False)
     result_df = lookup_canonical_hashes(hash_mapping_df, raw_data_frame)
-    # result_df.show(20,False)
     expected_col_names = [PIIInternalColumnNames.RAW_HASH_VALUE, HashMappingColumnNames.CANONICAL_HASH_VALUE]
     expected_rows = [
         ["PPAAAAAA", "CPAAAAAA"],
@@ -181,11 +180,11 @@ def hash_mapping_schema():
          StructField(HashMappingColumnNames.HASH_VALUE, StringType(), True)])
 
 
+# TODO: extract this, DRY
 def extract_rows_for_col(data_frame, col_names, order_by_column):
     # list comprehension is only way I can think of to make this easy
     # get Row objects and translate to Dict type
     rows_as_dicts = [i.asDict() for i in data_frame.select(col_names).orderBy(order_by_column).collect()]
 
     # from Dict get values in same order as column name COLUMN order
-    list_values = [[row_dict.get(col_name) for col_name in col_names] for row_dict in rows_as_dicts]
-    return list_values
+    return [[row_dict.get(col_name) for col_name in col_names] for row_dict in rows_as_dicts]
