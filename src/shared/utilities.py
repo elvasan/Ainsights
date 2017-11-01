@@ -16,6 +16,7 @@ class InputColumnNames:  # pylint:disable=too-few-public-methods
     INPUT_ID = "input_id"
     INPUT_ID_TYPE = "input_id_type"
     AS_OF_TIME = "as_of_time"
+    INPUT_ID_RAW = "input_id_raw"
 
 
 class GenericColumnNames:  # pylint:disable=too-few-public-methods
@@ -83,3 +84,23 @@ class ClassificationCategoryDisplayNames:  # pylint:disable=too-few-public-metho
     LEGAL = 'Legal'
     HOME_SERVICES = 'Home Services'
     OTHER = 'Other'
+
+
+class IdentifierTypes:  # pylint:disable=too-few-public-methods
+    PHONE = "phone"
+    EMAIL = "email"
+    LEADID = "leadid"
+
+
+class RawInputCSVColumnNames:  # pylint:disable=too-few-public-methods
+    RECORD_ID = "record_id"
+    PHONE_1 = "phone_1"
+    PHONE_2 = "phone_2"
+    PHONE_3 = "phone_3"
+    PHONE_4 = "phone_4"
+    EMAIL_1 = "email_1"
+    EMAIL_2 = "email_2"
+    EMAIL_3 = "email_3"
+    LEAD_1 = "lead_1"
+    LEAD_2 = "lead_2"
+    LEAD_3 = "lead_3"
