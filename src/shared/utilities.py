@@ -104,3 +104,9 @@ class RawInputCSVColumnNames:  # pylint:disable=too-few-public-methods
     LEAD_1 = "lead_1"
     LEAD_2 = "lead_2"
     LEAD_3 = "lead_3"
+
+
+class HashMappingColumnNames:  # pylint:disable=too-few-public-methods
+    CANONICAL_HASH_VALUE = "canonical_hash_value"
+    HASH_VALUE = "hash_value"
+    HASH_TYPE_CD = "hash_type_cd"

@@ -4,6 +4,7 @@ from jobs.classification.classify import classify, get_classification_subcategor
 from jobs.input.input_processing import process_input_file
 from jobs.output.output_processing import write_output, build_output_csv_folder_name
 from jobs.scoring.scoring import score_file
+from jobs.pii_hashing.pii_hashing import transform_raw_inputs
 
 
 def analyze(spark, logger, **job_args):
@@ -27,17 +28,16 @@ def analyze(spark, logger, **job_args):
     logger.info("ENVIRONMENT: " + environment)
 
     logger.info("READING INPUT FILE")
-    input_data_frame1 = process_input_file(spark, logger, client_name, environment)
-    logger.info("INPUT_DATA_FRAME PARTITION SIZE: {size}".format(size=input_data_frame1.rdd.getNumPartitions()))
+    raw_input_data_frame = process_input_file(spark, logger, client_name, environment)
+    logger.info("INPUT_DATA_FRAME PARTITION SIZE: {size}".format(size=raw_input_data_frame.rdd.getNumPartitions()))
+    # raw_input_data_frame.show(30, False)
 
-    # HACK!!! temp hack to add input_id so rest of processing works this will be replaced when we do
-    # pii_hashing work
-    input_data_frame = input_data_frame1.withColumn("input_id", input_data_frame1.input_id_raw) \
-        .select("record_id", "input_id_raw", "input_id", "input_id_type")
-    # END HACK
-
-    # Uncomment me when not in production
+    logger.info("PII HASHING START")
+    input_data_frame = transform_raw_inputs(spark, logger, raw_input_data_frame, environment)
+    input_data_frame.cache()
+    input_data_frame.collect()
     input_data_frame.show(30, False)
+    logger.info("PII HASHING END")
 
     logger.info("CLASSIFYING FILE INPUTS")
     classification_data_frame = classify(spark, logger, input_data_frame, environment)
@@ -50,6 +50,12 @@ def analyze(spark, logger, **job_args):
     logger.info(
         "CLASSIFY_SUBCATEGORY_DF PARTITION SIZE: {size}".format(size=classify_subcategory_df.rdd.getNumPartitions()))
     logger.info("SCORED_DATA_FRAME PARTITION SIZE: {size}".format(size=scored_data_frame.rdd.getNumPartitions()))
+
+    # cache final Scores (need the show statements to ensure action is fired)
+    scored_data_frame.cache()
+    scored_data_frame.collect()
+    scored_data_frame.show(30, False)
+    # end caching
 
     output_path = build_output_csv_folder_name(environment, client_name, time_stamp)
     logger.info("WRITING OUTPUT FILE TO {path}".format(path=output_path))
