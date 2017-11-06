@@ -48,9 +48,14 @@ def analyze(spark, logger, **job_args):
         size=consumer_insights_df.rdd.getNumPartitions()))
 
     logger.info("CLASSIFYING FILE INPUTS")
-    classification_data_frame = classify(spark, logger, consumer_insights_df, environment)
+    raw_classification_data_frame = classify(spark, logger, input_data_frame, environment)
     logger.info("CLASSIFICATION_DATA_FRAME PARTITION SIZE: {size}".format(
-        size=classification_data_frame.rdd.getNumPartitions()))
+        size=raw_classification_data_frame.rdd.getNumPartitions()))
+
+    # repartition on record_id before we score all values
+    logger.info("REPARTITION OF CLASSIFICATION RESULTS")
+    classification_data_frame = raw_classification_data_frame.repartition("record_id")
+    logger.info("REPARTITION OF CLASSIFICATION RESULTS - DONE")
 
     logger.info("SCORING RESULTS")
     classify_subcategory_df = get_classification_subcategory_df(spark, environment, logger)
