@@ -1,0 +1,30 @@
+[
+  {
+    "configurations":
+      [
+        {
+          "classification":"export",
+          "properties":
+          {
+            "PYSPARK_PYTHON":"python34"
+          }
+        }
+      ],
+    "classification":"spark-env",
+    "properties": {}
+  },
+  {
+    "classification":"spark-defaults",
+    "Properties":
+    {
+      "spark.executor.instances": "23",
+      "spark.yarn.executor.memoryOverhead": "4096",
+      "spark.executor.memory": "36G",
+      "spark.yarn.driver.memoryOverhead": "4096",
+      "spark.driver.memory": "36G",
+      "spark.executor.cores": "5",
+      "spark.driver.cores": "5",
+      "spark.default.parallelism:": "230"
+    }
+  }
+]

@@ -13,12 +13,12 @@ done
 
 provisionCluster() {
   cluster_id=$(aws emr create-cluster \
-            --applications Name=Hadoop Name=Spark \
-            --ec2-attributes '{"KeyName":"emr","SubnetId":"subnet-600fda2b","EmrManagedSlaveSecurityGroup":"sg-a030edd2","EmrManagedMasterSecurityGroup":"sg-5f36eb2d", "InstanceProfile":"EMR_EC2_Role"}' \
+            --applications Name=Hadoop Name=Spark Name=Ganglia \
+            --ec2-attributes https://s3.amazonaws.com/jornaya-${env}-us-east-1-aida-insights/pyspark/emr-ec2-attributes.json \
             --release-label emr-5.8.0 \
             --log-uri 's3n://aws-logs-794223901232-us-east-1/elasticmapreduce/' \
-            --instance-groups '[{"InstanceCount":4,"BidPrice":"2.15","EbsConfiguration":{"EbsBlockDeviceConfigs":[{"VolumeSpecification":{"SizeInGB":1000,"VolumeType":"gp2"},"VolumesPerInstance":1}],"EbsOptimized":true},"InstanceGroupType":"CORE","InstanceType":"r4.8xlarge","Name":"Core - 2"},{"InstanceCount":1,"BidPrice":"0.55","EbsConfiguration":{"EbsBlockDeviceConfigs":[{"VolumeSpecification":{"SizeInGB":200,"VolumeType":"gp2"},"VolumesPerInstance":1}],"EbsOptimized":true},"InstanceGroupType":"MASTER","InstanceType":"r4.2xlarge","Name":"Master - 1"}]' \
-            --configurations '[{"Classification":"spark-env","Properties":{},"Configurations":[{"Classification":"export","Properties":{"PYSPARK_PYTHON":"python34"},"Configurations":[]}]},{"Classification":"spark","Properties":{"maximizeResourceAllocation":"true"},"Configurations":[]}]' \
+            --instance-groups https://s3.amazonaws.com/jornaya-${env}-us-east-1-aida-insights/pyspark/emr-instance-groups.json \
+            --configurations https://s3.amazonaws.com/jornaya-${env}-us-east-1-aida-insights/pyspark/emr-config.json \
             --name 'aida-insights cluster' \
             --service-role EMR_Role \
             --region us-east-1 \
