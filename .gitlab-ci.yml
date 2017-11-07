@@ -32,6 +32,9 @@ artifactory:
     - apk add --update make zip curl
   script:
     - make build
+    - cp ./emr-deploy/emr-config.json dist/
+    - cp ./emr-deploy/emr-instance-groups.json dist/
+    - cp ./emr-deploy/emr-ec2-attributes.json dist/
     - echo ${CI_COMMIT_SHA} | cut -c-7 > dist/version.txt
     - apk add --no-cache --update curl
     - ARTIFACT_FILENAME=aida-insights-$(cat dist/version.txt).tgz
