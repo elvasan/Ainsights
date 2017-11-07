@@ -1,0 +1,32 @@
+[
+  {
+    "Configurations":
+      [
+        {
+          "Classification":"export",
+          "Properties":
+          {
+            "PYSPARK_PYTHON":"python34"
+          }
+        }
+      ],
+    "Classification":"spark-env",
+    "Properties": {}
+  },
+  {
+    "Classification":"spark-defaults",
+    "Properties":
+    {
+      "spark.executor.instances": "59",
+      "spark.yarn.executor.memoryOverhead": "2048",
+      "spark.executor.memory": "14G",
+      "spark.yarn.driver.memoryOverhead": "2048",
+      "spark.driver.memory": "14G",
+      "spark.executor.cores": "2",
+      "spark.driver.cores": "2",
+      "spark.default.parallelism:": "236",
+      "spark.eventLog.dir": "s3://aws-logs-794223901232-us-east-1/spark-history",
+      "spark.history.fs.logDirectory" :  "s3://aws-logs-794223901232-us-east-1/spark-history"
+    }
+  }
+]
