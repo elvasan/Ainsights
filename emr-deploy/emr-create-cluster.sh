@@ -14,11 +14,11 @@ done
 provisionCluster() {
   cluster_id=$(aws emr create-cluster \
             --applications Name=Hadoop Name=Spark Name=Ganglia \
-            --ec2-attributes https://s3.amazonaws.com/jornaya-${env}-us-east-1-aida-insights/pyspark/emr-ec2-attributes.json \
+            --ec2-attributes file://./emr-ec2-attributes.json \
             --release-label emr-5.8.0 \
             --log-uri 's3n://aws-logs-794223901232-us-east-1/elasticmapreduce/' \
-            --instance-groups https://s3.amazonaws.com/jornaya-${env}-us-east-1-aida-insights/pyspark/emr-instance-groups.json \
-            --configurations https://s3.amazonaws.com/jornaya-${env}-us-east-1-aida-insights/pyspark/emr-config.json \
+            --instance-groups file://./emr-instance-groups.json \
+            --configurations file://./emr-config.json \
             --name 'aida-insights cluster' \
             --service-role EMR_Role \
             --region us-east-1 \

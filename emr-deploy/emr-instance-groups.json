@@ -1,6 +1,6 @@
 [
   {
-    "InstanceCount" : "4",
+    "InstanceCount" : 4,
     "BidPrice" : "2.15",
     "EbsConfiguration" :
     {
@@ -9,20 +9,20 @@
         {
           "VolumeSpecification" :
           {
-            "SizeInGB" : "1000",
-            "VolumeType" : "gp2"
+            "SizeInGB" : 500,
+            "VolumeType" : "st1"
           },
           "VolumesPerInstance":1
         }
       ],
-      "EbsOptimized" : "true"
+      "EbsOptimized" : true
     },
     "InstanceGroupType" : "CORE",
     "InstanceType" : "r4.8xlarge",
     "Name" : "Core - 2"
   },
   {
-    "InstanceCount" : "1",
+    "InstanceCount" : 1,
     "BidPrice" : "0.55",
     "EbsConfiguration" :
     {
@@ -31,16 +31,16 @@
         {
           "VolumeSpecification" :
           {
-            "SizeInGB" : "200",
-            "VolumeType" : "gp2"
+            "SizeInGB" : 500,
+            "VolumeType" : "st1"
           },
           "VolumesPerInstance" : 1
         }
       ],
-      "EbsOptimized" : "true"
+      "EbsOptimized" : true
     },
     "InstanceGroupType" : "MASTER",
-    "InstanceType" : "r4.2xlarge",
+    "InstanceType" : "m4.2xlarge",
     "Name" : "Master - 1"
   }
 ]
