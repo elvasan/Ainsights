@@ -1,5 +1,6 @@
-from pyspark.sql.types import StructField, StructType, StringType, LongType
 from pyspark.sql.functions import lit, concat_ws, split, explode, when  # pylint:disable=no-name-in-module
+from pyspark.sql.types import StructField, StructType, StringType, LongType
+
 from shared.utilities import InputColumnNames, Environments, IdentifierTypes, RawInputCSVColumnNames
 
 ID_SEPARATOR = ':'
@@ -53,27 +54,61 @@ def load_csv_file(spark, full_file_name):
     return spark.read.csv(full_file_name, schema=input_csv_schema(), header=True, mode='FailFast')
 
 
+def load_parquet_into_df(spark_session, file_location):
+    """
+    Loads a parquet file into a DataFrame.
+    :param spark_session: The spark context initialized in on the application start up
+    :param file_location: The absolute path to the parquet file
+    :return: A DataFrame from the parquet location
+    """
+    return spark_session.read.parquet(file_location)
+
+
 def transform_input_csv(input_csv_df):
-    # collapse all 'phone', 'email', 'lead' columns to concatenated string so can make ArrayType
-    # define functions to combine all 'type' columns 'Phone1:Phone2:Phone3'
-    concatenated_phones = concat_ws(ID_SEPARATOR, RawInputCSVColumnNames.PHONE_1, RawInputCSVColumnNames.PHONE_2,
-                                    RawInputCSVColumnNames.PHONE_3, RawInputCSVColumnNames.PHONE_4).alias(
-        'all_phones_string')
-    concatenated_emails = concat_ws(ID_SEPARATOR, RawInputCSVColumnNames.EMAIL_1, RawInputCSVColumnNames.EMAIL_2,
-                                    RawInputCSVColumnNames.EMAIL_3).alias('all_emails_string')
-    concatenated_leads = concat_ws(ID_SEPARATOR, RawInputCSVColumnNames.LEAD_1, RawInputCSVColumnNames.LEAD_2,
-                                   RawInputCSVColumnNames.LEAD_3).alias('all_leads_string')
+    """
+    Collapse all 'phone', 'email', 'lead' columns to concatenated string so we have an ArrayType
+    Define functions to combine all 'type' columns 'Phone1:Phone2:Phone3'
+    :param input_csv_df: The initial customer input CSV file
+    :return: A DataFrame broken out row by row with
+    """
+    concatenated_phones = concat_ws(
+        ID_SEPARATOR,
+        RawInputCSVColumnNames.PHONE_1,
+        RawInputCSVColumnNames.PHONE_2,
+        RawInputCSVColumnNames.PHONE_3,
+        RawInputCSVColumnNames.PHONE_4) \
+        .alias('all_phones_string')
+
+    concatenated_emails = concat_ws(
+        ID_SEPARATOR,
+        RawInputCSVColumnNames.EMAIL_1,
+        RawInputCSVColumnNames.EMAIL_2,
+        RawInputCSVColumnNames.EMAIL_3) \
+        .alias('all_emails_string')
+
+    concatenated_leads = concat_ws(
+        ID_SEPARATOR,
+        RawInputCSVColumnNames.LEAD_1,
+        RawInputCSVColumnNames.LEAD_2,
+        RawInputCSVColumnNames.LEAD_3) \
+        .alias('all_leads_string')
     # select out record_id, and all_phones, all_emails, all_leads
-    all_concat_df = input_csv_df.select(input_csv_df.record_id, concatenated_phones, concatenated_emails,
-                                        concatenated_leads)
+    all_concat_df = input_csv_df. \
+        select(input_csv_df.record_id, concatenated_phones, concatenated_emails, concatenated_leads)
 
     # once have string of all values split by : to single column with array of string values
-    phone_splitter = when(all_concat_df.all_phones_string == '', None).otherwise(
-        split(all_concat_df.all_phones_string, ID_SEPARATOR)).alias("phones_array")
-    email_splitter = when(all_concat_df.all_emails_string == '', None).otherwise(
-        split(all_concat_df.all_emails_string, ID_SEPARATOR)).alias("emails_array")
-    lead_splitter = when(all_concat_df.all_leads_string == '', None).otherwise(
-        split(all_concat_df.all_leads_string, ID_SEPARATOR)).alias("leads_array")
+    phone_splitter = when(all_concat_df.all_phones_string == '', None) \
+        .otherwise(split(all_concat_df.all_phones_string, ID_SEPARATOR)) \
+        .alias("phones_array")
+
+    email_splitter = when(all_concat_df.all_emails_string == '', None) \
+        .otherwise(split(all_concat_df.all_emails_string, ID_SEPARATOR)) \
+        .alias("emails_array")
+
+    lead_splitter = when(all_concat_df.all_leads_string == '', None) \
+        .otherwise(split(all_concat_df.all_leads_string, ID_SEPARATOR)) \
+        .alias("leads_array")
+
     all_as_array_df = all_concat_df.select(input_csv_df.record_id, phone_splitter, email_splitter, lead_splitter)
 
     # Explode our array type columns into separate rows
@@ -81,8 +116,8 @@ def transform_input_csv(input_csv_df):
     # Output => record_id, input_id_raw, input_id_type
     #   100, PHONE111, phone
     #   100, PHONE222, phone
-    phones_exploded_df = all_as_array_df.withColumn(InputColumnNames.INPUT_ID_RAW,
-                                                    explode(all_as_array_df.phones_array)) \
+    phones_exploded_df = all_as_array_df \
+        .withColumn(InputColumnNames.INPUT_ID_RAW, explode(all_as_array_df.phones_array)) \
         .withColumn(InputColumnNames.INPUT_ID_TYPE, lit(IdentifierTypes.PHONE)) \
         .select(all_as_array_df.record_id, InputColumnNames.INPUT_ID_RAW, InputColumnNames.INPUT_ID_TYPE)
 
@@ -91,8 +126,8 @@ def transform_input_csv(input_csv_df):
     # Output => record_id, input_id_raw, input_id_type
     #   100, EMAIL111, email
     #   100, EMAIL222, email
-    emails_exploded_df = all_as_array_df.withColumn(InputColumnNames.INPUT_ID_RAW,
-                                                    explode(all_as_array_df.emails_array)) \
+    emails_exploded_df = all_as_array_df \
+        .withColumn(InputColumnNames.INPUT_ID_RAW, explode(all_as_array_df.emails_array)) \
         .withColumn(InputColumnNames.INPUT_ID_TYPE, lit(IdentifierTypes.EMAIL)) \
         .select(all_as_array_df.record_id, InputColumnNames.INPUT_ID_RAW, InputColumnNames.INPUT_ID_TYPE)
 
@@ -101,16 +136,17 @@ def transform_input_csv(input_csv_df):
     # Output => record_id, input_id_raw, input_id_type
     #   100, LEAD111, leadid
     #   100, LEAD222, leadid
-    leads_exploded_df = all_as_array_df.withColumn(InputColumnNames.INPUT_ID_RAW, explode(all_as_array_df.leads_array))\
+    leads_exploded_df = all_as_array_df \
+        .withColumn(InputColumnNames.INPUT_ID_RAW, explode(all_as_array_df.leads_array)) \
         .withColumn(InputColumnNames.INPUT_ID_TYPE, lit(IdentifierTypes.LEADID)) \
         .select(all_as_array_df.record_id, InputColumnNames.INPUT_ID_RAW, InputColumnNames.INPUT_ID_TYPE)
 
-    # union all the tables back
-    result_df = phones_exploded_df.union(emails_exploded_df).union(leads_exploded_df) \
+    # union all the tables back and return the result
+    return phones_exploded_df.union(emails_exploded_df) \
+        .union(leads_exploded_df) \
         .withColumn(InputColumnNames.HAS_ERROR, lit(False)) \
         .withColumn(InputColumnNames.ERROR_MESSAGE, lit(None)) \
         .orderBy(all_as_array_df.record_id)
-    return result_df
 
 
 def input_csv_schema():
@@ -124,14 +160,14 @@ def input_csv_schema():
     # record_id, phone_1, phone_2, phone_3, phone_4, email_1, email_2, email_3, lead_1, lead_2, lead_3, as_of_time
     return StructType(
         [StructField(InputColumnNames.RECORD_ID, LongType(), False),
-         StructField(RawInputCSVColumnNames.PHONE_1, StringType(), True),
-         StructField(RawInputCSVColumnNames.PHONE_2, StringType(), True),
-         StructField(RawInputCSVColumnNames.PHONE_3, StringType(), True),
-         StructField(RawInputCSVColumnNames.PHONE_4, StringType(), True),
-         StructField(RawInputCSVColumnNames.EMAIL_1, StringType(), True),
-         StructField(RawInputCSVColumnNames.EMAIL_2, StringType(), True),
-         StructField(RawInputCSVColumnNames.EMAIL_3, StringType(), True),
-         StructField(RawInputCSVColumnNames.LEAD_1, StringType(), True),
-         StructField(RawInputCSVColumnNames.LEAD_2, StringType(), True),
-         StructField(RawInputCSVColumnNames.LEAD_3, StringType(), True),
-         StructField(InputColumnNames.AS_OF_TIME, StringType(), True)])
+         StructField(RawInputCSVColumnNames.PHONE_1, StringType()),
+         StructField(RawInputCSVColumnNames.PHONE_2, StringType()),
+         StructField(RawInputCSVColumnNames.PHONE_3, StringType()),
+         StructField(RawInputCSVColumnNames.PHONE_4, StringType()),
+         StructField(RawInputCSVColumnNames.EMAIL_1, StringType()),
+         StructField(RawInputCSVColumnNames.EMAIL_2, StringType()),
+         StructField(RawInputCSVColumnNames.EMAIL_3, StringType()),
+         StructField(RawInputCSVColumnNames.LEAD_1, StringType()),
+         StructField(RawInputCSVColumnNames.LEAD_2, StringType()),
+         StructField(RawInputCSVColumnNames.LEAD_3, StringType()),
+         StructField(InputColumnNames.AS_OF_TIME, StringType())])
