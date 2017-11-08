@@ -164,7 +164,6 @@ def test_transform_input_csv_returns_rows_with_multiple_value(spark_session):
         (1, 'PP1111', 'PP2222', None, None, 'EE1111', 'EE2222', None, 'LL1111', 'LL2222', None, '1506844800'),
         (2, 'PP3333', None, None, None, None, None, None, None, None, None, '1506844800')]
     input_csv_data_frame = spark_session.createDataFrame(raw_hash_rows, input_csv_schema())
-    # input_csv_data_frame.show(20,False)
     result_data_frame = transform_input_csv(input_csv_data_frame)
     extracted_row_values = [[i.record_id, i.input_id_raw, i.input_id_type, i.has_error, i.error_message] for i
                             in result_data_frame.select(
@@ -179,7 +178,6 @@ def test_transform_input_csv_returns_rows_with_multiple_value(spark_session):
         [1, 'LL2222', IdentifierTypes.LEADID, False, None],
         [2, 'PP3333', IdentifierTypes.PHONE, False, None]
     ]
-    # result_data_frame.show(30,False)
     assert extracted_row_values == expected_rows
 
 

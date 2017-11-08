@@ -1,10 +1,11 @@
 import datetime
 
 from jobs.classification.classify import classify, get_classification_subcategory_df
+from jobs.consumer_insights.consumer_insights_processing import retrieve_leads_from_consumer_graph
 from jobs.input.input_processing import process_input_file
 from jobs.output.output_processing import write_output, build_output_csv_folder_name
-from jobs.scoring.scoring import score_file
 from jobs.pii_hashing.pii_hashing import transform_raw_inputs
+from jobs.scoring.scoring import score_file
 
 
 def analyze(spark, logger, **job_args):
@@ -30,17 +31,24 @@ def analyze(spark, logger, **job_args):
     logger.info("READING INPUT FILE")
     raw_input_data_frame = process_input_file(spark, logger, client_name, environment)
     logger.info("INPUT_DATA_FRAME PARTITION SIZE: {size}".format(size=raw_input_data_frame.rdd.getNumPartitions()))
-    # raw_input_data_frame.show(30, False)
 
     logger.info("PII HASHING START")
     input_data_frame = transform_raw_inputs(spark, logger, raw_input_data_frame, environment)
     input_data_frame.cache()
     input_data_frame.collect()
-    input_data_frame.show(30, False)
+    input_data_frame.show(50, True)
     logger.info("PII HASHING END")
 
+    logger.info("RETRIEVING LEADS FROM CONSUMER INSIGHTS")
+    consumer_insights_df = retrieve_leads_from_consumer_graph(spark, environment, input_data_frame)
+    consumer_insights_df.cache()
+    consumer_insights_df.collect()
+    consumer_insights_df.show(50, True)
+    logger.info("CONSUMER_INSIGHTS_DF PARTITION SIZE: {size}".format(
+        size=consumer_insights_df.rdd.getNumPartitions()))
+
     logger.info("CLASSIFYING FILE INPUTS")
-    classification_data_frame = classify(spark, logger, input_data_frame, environment)
+    classification_data_frame = classify(spark, logger, consumer_insights_df, environment)
     logger.info("CLASSIFICATION_DATA_FRAME PARTITION SIZE: {size}".format(
         size=classification_data_frame.rdd.getNumPartitions()))
 
@@ -54,7 +62,7 @@ def analyze(spark, logger, **job_args):
     # cache final Scores (need the show statements to ensure action is fired)
     scored_data_frame.cache()
     scored_data_frame.collect()
-    scored_data_frame.show(30, False)
+    scored_data_frame.show(50, True)
     # end caching
 
     output_path = build_output_csv_folder_name(environment, client_name, time_stamp)
