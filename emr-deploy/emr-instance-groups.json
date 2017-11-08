@@ -1,6 +1,6 @@
 [
   {
-    "InstanceCount" : 4,
+    "InstanceCount" : 5,
     "BidPrice" : "2.15",
     "EbsConfiguration" :
     {
@@ -9,7 +9,7 @@
         {
           "VolumeSpecification" :
           {
-            "SizeInGB" : 500,
+            "SizeInGB" : 1000,
             "VolumeType" : "st1"
           },
           "VolumesPerInstance":1
@@ -31,7 +31,7 @@
         {
           "VolumeSpecification" :
           {
-            "SizeInGB" : 500,
+            "SizeInGB" : 1000,
             "VolumeType" : "st1"
           },
           "VolumesPerInstance" : 1
