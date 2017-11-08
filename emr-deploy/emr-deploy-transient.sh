@@ -17,14 +17,14 @@ done
 
 provisionCluster() {
   cluster_id=$(aws emr create-cluster \
-            --applications Name=Hadoop Name=Spark \
+            --applications Name=Hadoop Name=Spark Name=Ganglia Name=Hue \
             --ec2-attributes file://./emr-ec2-attributes.json \
             --release-label emr-5.8.0 \
             --log-uri 's3n://aws-logs-794223901232-us-east-1/elasticmapreduce/' \
             --steps '[{"Args":["spark-submit","--deploy-mode","cluster","--py-files","s3://jornaya-'${env}'-us-east-1-aida-insights/pyspark/jobs.zip","s3://jornaya-'${env}'-us-east-1-aida-insights/pyspark/main.py","--job-args","environment='${env}'","client_name='${client_name}'"],"Type":"CUSTOM_JAR","ActionOnFailure":"TERMINATE_CLUSTER","Jar":"command-runner.jar","Properties":"","Name":"Spark application"}]' \
             --instance-groups file://./emr-instance-groups.json  \
             --configurations file://./emr-config.json \
-            --name 'aida-insights select_classification' \
+            --name 'aida-insights transient cluster' \
             --service-role EMR_Role \
             --region us-east-1 \
             --profile jornaya-${env} \

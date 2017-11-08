@@ -17,16 +17,15 @@
     "Classification":"spark-defaults",
     "Properties":
     {
-      "spark.executor.instances": "59",
-      "spark.yarn.executor.memoryOverhead": "2048",
-      "spark.executor.memory": "14G",
-      "spark.yarn.driver.memoryOverhead": "2048",
-      "spark.driver.memory": "14G",
-      "spark.executor.cores": "2",
-      "spark.driver.cores": "2",
-      "spark.default.parallelism:": "236",
-      "spark.eventLog.dir": "s3://aws-logs-794223901232-us-east-1/spark-history",
-      "spark.history.fs.logDirectory" :  "s3://aws-logs-794223901232-us-east-1/spark-history"
+      "spark.executor.instances": "49",
+      "spark.yarn.executor.memoryOverhead": "3072",
+      "spark.executor.memory": "21G",
+      "spark.yarn.driver.memoryOverhead": "3072",
+      "spark.driver.memory": "21G",
+      "spark.executor.cores": "3",
+      "spark.driver.cores": "3",
+      "spark.default.parallelism:": "294",
+      "spark.eventLog.dir": "s3://aws-logs-794223901232-us-east-1/spark-history"
     }
   }
 ]
