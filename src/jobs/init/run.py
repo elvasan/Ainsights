@@ -36,19 +36,19 @@ def analyze(spark, logger, **job_args):
     input_data_frame = transform_raw_inputs(spark, logger, raw_input_data_frame, environment)
     input_data_frame.cache()
     input_data_frame.collect()
-    input_data_frame.show(50, True)
+    input_data_frame.show(50, False)
     logger.info("PII HASHING END")
 
     logger.info("RETRIEVING LEADS FROM CONSUMER INSIGHTS")
     consumer_insights_df = retrieve_leads_from_consumer_graph(spark, environment, input_data_frame)
     consumer_insights_df.cache()
     consumer_insights_df.collect()
-    consumer_insights_df.show(50, True)
+    consumer_insights_df.show(50, False)
     logger.info("CONSUMER_INSIGHTS_DF PARTITION SIZE: {size}".format(
         size=consumer_insights_df.rdd.getNumPartitions()))
 
     logger.info("CLASSIFYING FILE INPUTS")
-    raw_classification_data_frame = classify(spark, logger, input_data_frame, environment)
+    raw_classification_data_frame = classify(spark, logger, consumer_insights_df, environment)
     logger.info("CLASSIFICATION_DATA_FRAME PARTITION SIZE: {size}".format(
         size=raw_classification_data_frame.rdd.getNumPartitions()))
 
@@ -56,6 +56,7 @@ def analyze(spark, logger, **job_args):
     logger.info("REPARTITION OF CLASSIFICATION RESULTS")
     classification_data_frame = raw_classification_data_frame.repartition("record_id")
     logger.info("REPARTITION OF CLASSIFICATION RESULTS - DONE")
+    raw_classification_data_frame.show(50, False)
 
     logger.info("SCORING RESULTS")
     classify_subcategory_df = get_classification_subcategory_df(spark, environment, logger)
@@ -67,7 +68,7 @@ def analyze(spark, logger, **job_args):
     # cache final Scores (need the show statements to ensure action is fired)
     scored_data_frame.cache()
     scored_data_frame.collect()
-    scored_data_frame.show(50, True)
+    scored_data_frame.show(50, False)
     # end caching
 
     output_path = build_output_csv_folder_name(environment, client_name, time_stamp)
