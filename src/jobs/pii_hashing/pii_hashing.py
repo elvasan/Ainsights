@@ -1,8 +1,11 @@
 from jobs.input.input_processing import load_parquet_into_df
 from shared.utilities import InputColumnNames, Environments, IdentifierTypes, HashMappingColumnNames
 
+MD5_VALUE_CODE = '2'
+SHA256_VALUE_CODE = '5'
 
-class PIIInternalColumnNames:  # pylint:disable=too-few-public-methods
+
+class PiiInternalColumnNames:  # pylint:disable=too-few-public-methods
     CANONICAL_HASH_VALUE = "canonical_hash_value"
     RAW_HASH_VALUE = "raw_hash_value"
 
@@ -88,7 +91,7 @@ def lookup_canonical_hashes(hash_mapping_df, phones_emails_df):
 def select_distinct_raw_hash_values_for_phones_emails(input_df):
     # get unique set of hashed_values of PHONES, EMAIL types only
     return input_df.filter(input_df.input_id_type.isin([IdentifierTypes.EMAIL, IdentifierTypes.PHONE])) \
-        .select(input_df.input_id_raw.alias(PIIInternalColumnNames.RAW_HASH_VALUE)) \
+        .select(input_df.input_id_raw.alias(PiiInternalColumnNames.RAW_HASH_VALUE)) \
         .distinct()
 
 
@@ -103,9 +106,10 @@ def get_hash_mapping_df(spark_session, environment, logger):
     schema_location = get_hash_mapping_schema_location(environment)
     logger.info("Reading hash_mapping file from {location}".format(location=schema_location))
     hash_map_df = load_parquet_into_df(spark_session, schema_location)
-    # select out only the canonical_hash_value and hash_value columns
-    # TODO: look into only pulling the two supported hash value types
-    return hash_map_df.select(hash_map_df.canonical_hash_value, hash_map_df.hash_value)
+    # select out only the canonical_hash_value and hash_value columns that are lower md5 or lower sha256
+    return hash_map_df \
+        .filter(hash_map_df.hash_type_cd.isin([MD5_VALUE_CODE, SHA256_VALUE_CODE])) \
+        .select(hash_map_df.canonical_hash_value, hash_map_df.hash_value)
 
 
 def get_hash_mapping_schema_location(environment):
