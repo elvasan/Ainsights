@@ -28,8 +28,9 @@ def analyze(spark, logger, **job_args):
     logger.info("CLIENT NAME: " + client_name)
     logger.info("ENVIRONMENT: " + environment)
 
-    logger.info("READING INPUT FILE")
+    logger.info("RAW INPUT FILE START")
     raw_input_data_frame = process_input_file(spark, logger, client_name, environment)
+    logger.info("RAW INPUT FILE END")
     logger.info("INPUT_DATA_FRAME PARTITION SIZE: {size}".format(size=raw_input_data_frame.rdd.getNumPartitions()))
 
     logger.info("PII HASHING START")
@@ -39,26 +40,30 @@ def analyze(spark, logger, **job_args):
     input_data_frame.show(50, False)
     logger.info("PII HASHING END")
 
-    logger.info("RETRIEVING LEADS FROM CONSUMER INSIGHTS")
+    logger.info("CONSUMER INSIGHTS START")
     consumer_insights_df = retrieve_leads_from_consumer_graph(spark, environment, input_data_frame)
     consumer_insights_df.cache()
     consumer_insights_df.collect()
     consumer_insights_df.show(50, False)
+    logger.info("CONSUMER INSIGHTS END")
     logger.info("CONSUMER_INSIGHTS_DF PARTITION SIZE: {size}".format(
         size=consumer_insights_df.rdd.getNumPartitions()))
 
-    logger.info("CLASSIFYING FILE INPUTS")
+    logger.info("CLASSIFICATION START")
     raw_classification_data_frame = classify(spark, logger, consumer_insights_df, environment)
     logger.info("CLASSIFICATION_DATA_FRAME PARTITION SIZE: {size}".format(
         size=raw_classification_data_frame.rdd.getNumPartitions()))
 
     # repartition on record_id before we score all values
-    logger.info("REPARTITION OF CLASSIFICATION RESULTS")
+    logger.info("REPARTITIONING CLASSIFICATION RESULTS")
     classification_data_frame = raw_classification_data_frame.repartition("record_id")
-    logger.info("REPARTITION OF CLASSIFICATION RESULTS - DONE")
-    raw_classification_data_frame.show(50, False)
+    logger.info("REPARTITION OF CLASSIFICATION RESULTS DONE")
+    classification_data_frame.cache()
+    classification_data_frame.collect()
+    classification_data_frame.show(50, False)
+    logger.info("CLASSIFICATION END")
 
-    logger.info("SCORING RESULTS")
+    logger.info("SCORING START")
     classify_subcategory_df = get_classification_subcategory_df(spark, environment, logger)
     scored_data_frame = score_file(classify_subcategory_df, classification_data_frame)
     logger.info(
@@ -69,8 +74,11 @@ def analyze(spark, logger, **job_args):
     scored_data_frame.cache()
     scored_data_frame.collect()
     scored_data_frame.show(50, False)
+    logger.info("SCORING END")
     # end caching
 
+    logger.info("WRITE OUTPUT START")
     output_path = build_output_csv_folder_name(environment, client_name, time_stamp)
     logger.info("WRITING OUTPUT FILE TO {path}".format(path=output_path))
     write_output(output_path, classify_subcategory_df, scored_data_frame)
+    logger.info("WRITE OUTPUT END")
