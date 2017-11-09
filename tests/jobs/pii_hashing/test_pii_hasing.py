@@ -3,7 +3,7 @@ from pyspark.sql.types import StructField, StructType, StringType, LongType, Boo
 
 from jobs.pii_hashing.pii_hashing import get_hash_mapping_schema_location, \
     select_distinct_raw_hash_values_for_phones_emails, populate_all_raw_inputs, lookup_canonical_hashes, \
-    transform_lead_values_input_id_column, join_canonical_hash_values_to_phones_emails, PIIInternalColumnNames
+    transform_lead_values_input_id_column, join_canonical_hash_values_to_phones_emails, PiiInternalColumnNames
 from shared.utilities import Environments, IdentifierTypes, InputColumnNames, HashMappingColumnNames
 
 # define mark (need followup if need this)
@@ -96,13 +96,13 @@ def test_lookup_canonical_hashes_returns_only_matching_values(spark_session):
         ("CEFFFFFF", "EEFFFFFF")]
     hash_mapping_df = spark_session.createDataFrame(hash_mapping_rows, hash_mapping_schema())
     result_df = lookup_canonical_hashes(hash_mapping_df, raw_data_frame)
-    expected_col_names = [PIIInternalColumnNames.RAW_HASH_VALUE, HashMappingColumnNames.CANONICAL_HASH_VALUE]
+    expected_col_names = [PiiInternalColumnNames.RAW_HASH_VALUE, HashMappingColumnNames.CANONICAL_HASH_VALUE]
     expected_rows = [
         ["PPAAAAAA", "CPAAAAAA"],
         ["EEGGGGGG", "CEGGGGGG"],
         ["EEFFFFFF", "CEFFFFFF"],
         ["EEHHHHHH", None]]
-    extracted_row_values = extract_rows_for_col(result_df, expected_col_names, PIIInternalColumnNames.RAW_HASH_VALUE)
+    extracted_row_values = extract_rows_for_col(result_df, expected_col_names, PiiInternalColumnNames.RAW_HASH_VALUE)
     assert sorted(extracted_row_values) == sorted(expected_rows)
 
 
@@ -144,7 +144,7 @@ def test_join_canonical_hash_values_to_phones_emails(spark_session):
         ("PPAAAAAA", "CPAAAAAA"),
         ("EEGGGGGG", "CEGGGGGG"),
         ("EEFFFFFF", "CEFFFFFF")]
-    hash_mapping_df = spark_session.createDataFrame(hash_mapping_rows, (PIIInternalColumnNames.RAW_HASH_VALUE,
+    hash_mapping_df = spark_session.createDataFrame(hash_mapping_rows, (PiiInternalColumnNames.RAW_HASH_VALUE,
                                                                         HashMappingColumnNames.CANONICAL_HASH_VALUE))
     email_phones_df = join_canonical_hash_values_to_phones_emails(raw_data_frame, hash_mapping_df)
     expected_col_names = [InputColumnNames.RECORD_ID, InputColumnNames.INPUT_ID_RAW, InputColumnNames.INPUT_ID_TYPE,
@@ -171,7 +171,7 @@ def input_csv_transformed_schema():
 
 def distinct_raw_hash_schema():
     return StructType(
-        [StructField(PIIInternalColumnNames.RAW_HASH_VALUE, StringType(), True)])
+        [StructField(PiiInternalColumnNames.RAW_HASH_VALUE, StringType(), True)])
 
 
 def hash_mapping_schema():
