@@ -30,11 +30,13 @@ def get_leads_from_cluster_id_df(consumer_view_df, cluster_id_df):
     # Ran into a warning here where it couldn't distinguish between cluster_id in the join so I had to use aliases.
     cis_df = consumer_view_df.alias("cis_df")
     cluster_df = cluster_id_df.alias("cluster_df")
-    # Join condition here is acting as filter
-    join_condition = [cis_df.cluster_id == cluster_df.cluster_id,
-                      col(ConsumerViewSchema.NODE_TYPE_CD) == IdentifierTypes.LEADID]
-    return cluster_id_df.join(consumer_view_df, join_condition, "left") \
-        .drop(ConsumerViewSchema.CLUSTER_ID, ConsumerViewSchema.NODE_TYPE_CD) \
+    filtered_cis_df = cis_df \
+        .filter(col(ConsumerViewSchema.NODE_TYPE_CD) == IdentifierTypes.LEADID) \
+        .drop(ConsumerViewSchema.NODE_TYPE_CD)
+
+    join_condition = filtered_cis_df.cluster_id == cluster_df.cluster_id
+    return cluster_df.join(filtered_cis_df, join_condition, "left") \
+        .drop(ConsumerViewSchema.CLUSTER_ID) \
         .withColumnRenamed(ConsumerViewSchema.VALUE, PiiHashingColumnNames.INPUT_ID) \
         .distinct()
 
@@ -65,7 +67,8 @@ def get_consumer_view_df(spark, schema_location):
     unfiltered_consumer_view_df = load_parquet_into_df(spark, schema_location)
     return unfiltered_consumer_view_df.select(ConsumerViewSchema.NODE_TYPE_CD,
                                               ConsumerViewSchema.VALUE,
-                                              ConsumerViewSchema.CLUSTER_ID)
+                                              ConsumerViewSchema.CLUSTER_ID) \
+        .filter(unfiltered_consumer_view_df.node_type_cd != "device_id")
 
 
 def build_consumer_view_schema_location(environment):
