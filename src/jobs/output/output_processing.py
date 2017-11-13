@@ -64,5 +64,6 @@ def write_output(output_path, classification_subcategory_df, scored_results_df):
     """
     results_df = transform_scoring_columns_for_output(classification_subcategory_df, scored_results_df)
     results_df \
+        .coalesce(1) \
         .write \
         .csv(path=output_path, mode="overwrite", header="True")
