@@ -1,5 +1,5 @@
 from jobs.input.input_processing import load_parquet_into_df
-from shared.utilities import InputColumnNames, Environments, IdentifierTypes, HashMappingColumnNames
+from shared.constants import InputColumnNames, Environments, IdentifierTypes, HashMappingColumnNames, JoinTypes
 
 MD5_VALUE_CODE = '2'
 SHA256_VALUE_CODE = '5'
@@ -63,7 +63,7 @@ def join_canonical_hash_values_to_phones_emails(input_df, canonical_hash_values)
     result_df = input_df.filter(input_df.input_id_type.isin([IdentifierTypes.PHONE, IdentifierTypes.EMAIL]))
     # left join to hash_values and add just canonical_hash_value column
     join_expression = result_df.input_id_raw == canonical_hash_values.raw_hash_value
-    return result_df.join(canonical_hash_values, join_expression, "left") \
+    return result_df.join(canonical_hash_values, join_expression, JoinTypes.LEFT_JOIN) \
         .select(result_df.record_id,
                 result_df.input_id_raw,
                 result_df.input_id_type,
@@ -84,7 +84,7 @@ def lookup_canonical_hashes(hash_mapping_df, phones_emails_df):
     # left join to hash_values and add just canonical_hash_value column
     join_expression = hash_mapping_df.hash_value == phones_emails_df.raw_hash_value
     return phones_emails_df \
-        .join(hash_mapping_df, join_expression, "left") \
+        .join(hash_mapping_df, join_expression, JoinTypes.LEFT_JOIN) \
         .drop(HashMappingColumnNames.HASH_VALUE)
 
 

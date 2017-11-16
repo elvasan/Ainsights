@@ -3,7 +3,7 @@ from pyspark.sql.types import StructField, StructType, StringType, LongType
 
 from jobs.scoring.scoring import score_file, flatten_subcategories, join_classified_inputs_to_subcategories,\
     score_flat_results_by_frequency
-from shared.utilities import ClassificationSubcategory, InputColumnNames, ClassificationCategoryAbbreviations
+from shared.constants import ClassificationSubcategory, InputColumnNames, ClassificationCategoryAbbreviations
 
 # define mark (need followup if need this)
 spark_session_enabled = pytest.mark.usefixtures("spark_session")

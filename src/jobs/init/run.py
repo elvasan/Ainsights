@@ -1,14 +1,16 @@
 import datetime
 
-from jobs.classification.classify import classify, get_classification_subcategory_df
+from jobs.classification.classify import classify, get_classification_subcategory_df, \
+    apply_event_lookback_to_classified_leads
 from jobs.consumer_insights.consumer_insights_processing import retrieve_leads_from_consumer_graph
+from jobs.init.config import get_application_config_df
 from jobs.input.input_processing import process_input_file
 from jobs.output.output_processing import write_output, build_output_csv_folder_name
 from jobs.pii_hashing.pii_hashing import transform_raw_inputs
 from jobs.scoring.scoring import score_file
 
 
-def analyze(spark, logger, **job_args):
+def analyze(spark, logger, **job_args):  # pylint:disable=too-many-statements,too-many-locals
     """
     Takes the spark context launched in main.py and runs the AIDA Insights application. The application will
     take an input file, get the canonical hash values for phones, emails, and devices, retrieve associated
@@ -27,6 +29,8 @@ def analyze(spark, logger, **job_args):
     logger.info("USING THE FOLLOWING JOB ARGUMENTS")
     logger.info("CLIENT NAME: " + client_name)
     logger.info("ENVIRONMENT: " + environment)
+
+    app_config_df = get_application_config_df(spark, environment, client_name, logger)
 
     logger.info("RAW INPUT FILE START")
     raw_input_data_frame = process_input_file(spark, logger, client_name, environment)
@@ -51,12 +55,16 @@ def analyze(spark, logger, **job_args):
 
     logger.info("CLASSIFICATION START")
     raw_classification_data_frame = classify(spark, logger, consumer_insights_df, environment)
+    filtered_classification_df = apply_event_lookback_to_classified_leads(raw_classification_data_frame,
+                                                                          app_config_df,
+                                                                          time_stamp)
+
     logger.info("CLASSIFICATION_DATA_FRAME PARTITION SIZE: {size}".format(
-        size=raw_classification_data_frame.rdd.getNumPartitions()))
+        size=filtered_classification_df.rdd.getNumPartitions()))
 
     # repartition on record_id before we score all values
     logger.info("REPARTITIONING CLASSIFICATION RESULTS")
-    classification_data_frame = raw_classification_data_frame.repartition("record_id")
+    classification_data_frame = filtered_classification_df.repartition("record_id")
     logger.info("REPARTITION OF CLASSIFICATION RESULTS DONE")
     classification_data_frame.cache()
     classification_data_frame.collect()

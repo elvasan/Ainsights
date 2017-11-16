@@ -1,5 +1,6 @@
-from shared.utilities import ClassificationSubcategory, InputColumnNames
 from pyspark.sql.functions import sum  # pylint:disable=redefined-builtin
+
+from shared.constants import ClassificationSubcategory, InputColumnNames, JoinTypes
 
 
 def score_file(classification_subcategories_df, classified_inputs_df):
@@ -51,7 +52,7 @@ def join_classified_inputs_to_subcategories(subcategories_flat_df, classified_in
     # 101                       1           0           0
     # JOIN on classif_subcategory_key and join in on flatted results.
     score_join = (classified_inputs_df.classif_subcategory_key == subcategories_flat_df.classif_subcategory_key)
-    return classified_inputs_df.join(subcategories_flat_df, score_join, "left_outer") \
+    return classified_inputs_df.join(subcategories_flat_df, score_join, JoinTypes.LEFT_OUTER_JOIN) \
         .drop(ClassificationSubcategory.CLASSIF_SUBCATEGORY_KEY) \
         .fillna(0)
 
@@ -83,6 +84,6 @@ def score_flat_results_by_frequency(classified_inputs_df):
     # e.g. sum(auto_sales).alias(auto_sales)
     sum_aggregate_expressions = [sum(col_name).alias("{0}".format(col_name)) for col_name in scored_columns]
     # group by record_id using aggregate function
-    classified_inputs_totaled_df = classified_inputs_df.groupBy(InputColumnNames.RECORD_ID)\
+    classified_inputs_totaled_df = classified_inputs_df.groupBy(InputColumnNames.RECORD_ID) \
         .agg(*sum_aggregate_expressions)
     return classified_inputs_totaled_df.select(selected_columns).orderBy(InputColumnNames.RECORD_ID)

@@ -4,7 +4,7 @@ from pyspark.sql.types import StructField, StructType, StringType, LongType, Boo
 from jobs.pii_hashing.pii_hashing import get_hash_mapping_schema_location, \
     select_distinct_raw_hash_values_for_phones_emails, populate_all_raw_inputs, lookup_canonical_hashes, \
     transform_lead_values_input_id_column, join_canonical_hash_values_to_phones_emails, PiiInternalColumnNames
-from shared.utilities import Environments, IdentifierTypes, InputColumnNames, HashMappingColumnNames
+from shared.constants import Environments, IdentifierTypes, InputColumnNames, HashMappingColumnNames
 
 # define mark (need followup if need this)
 spark_session_enabled = pytest.mark.usefixtures("spark_session")

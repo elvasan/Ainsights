@@ -28,6 +28,7 @@ test:
 	python -m pytest ./tests/*
 
 build: clean
-	mkdir ./dist
+	mkdir -p ./dist/config
 	cp ./src/main.py ./dist
+	cp ./samples/pyspark/config/application_defaults.csv ./dist/config/application_defaults.csv
 	cd ./src && zip -x main.py -r ../dist/jobs.zip .

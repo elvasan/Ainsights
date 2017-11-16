@@ -1,0 +1,20 @@
+option,config_abbrev,value
+event_lookback,auto_sales,30
+event_lookback,education,90
+event_lookback,insurance,20
+event_lookback,financial_services,10
+event_lookback,real_estate,30
+event_lookback,jobs,10
+event_lookback,legal,20
+event_lookback,home_services,5
+event_lookback,other,5
+frequency_threshold,auto_sales,3
+frequency_threshold,education,2
+frequency_threshold,insurance,3
+frequency_threshold,financial_services,2
+frequency_threshold,real_estate,1
+frequency_threshold,jobs,3
+frequency_threshold,legal,3
+frequency_threshold,home_services,2
+frequency_threshold,other,4
+asof,asof,2017-10-16 12:00:00

@@ -120,11 +120,32 @@ class PiiHashingColumnNames:  # pylint:disable=too-few-public-methods
 
 
 class ConsumerViewSchema:  # pylint:disable=too-few-public-methods
-    CONSUMER_VIEW_KEY = "consumer_view_key"
     NODE_TYPE_CD = "node_type_cd"
     VALUE = "value"
     CLUSTER_ID = "cluster_id"
+
+
+class ConfigurationSchema:  # pylint:disable=too-few-public-methods
+    OPTION = "option"
+    CONFIG_ABBREV = "config_abbrev"
+    VALUE = "value"
+
+
+class ConfigurationOptions:  # pylint:disable=too-few-public-methods
+    EVENT_LOOKBACK = "event_lookback"
+    FREQUENCY_THRESHOLD = "frequency_threshold"
+    ASOF = "asof"
+
+
+class LeadEventSchema:  # pylint:disable=too-few-public-methods
+    LEAD_ID = "lead_id"
+    SERVER_GMT_TS = "server_gmt_ts"
+    GENERATOR_ACCOUNT_KEY = "generator_account_key"
+    CAMPAIGN_KEY = "campaign_key"
     CREATION_TS = "creation_ts"
-    GENERATOR_ACCOUNT_ID = "generator_account_id"
-    GENERATOR_CAMPAIGN_KEY = "generator_campaign_key"
-    INSERTED_TS = "inserted_ts"
+
+
+class JoinTypes:  # pylint:disable=too-few-public-methods
+    LEFT_JOIN = "left"
+    LEFT_ANTI_JOIN = "left_anti"
+    LEFT_OUTER_JOIN = "left_outer"

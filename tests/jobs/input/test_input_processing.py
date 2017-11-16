@@ -7,7 +7,7 @@ from pyspark.sql.utils import AnalysisException
 
 from jobs.input.input_processing import transform_input_csv, build_input_csv_file_name, input_csv_schema, \
     load_csv_file, process_input_file
-from shared.utilities import Environments, GenericColumnNames, InputColumnNames, IdentifierTypes
+from shared.constants import Environments, InputColumnNames, IdentifierTypes
 
 # define mark (need followup if need this)
 spark_session_enabled = pytest.mark.usefixtures("spark_session")
@@ -58,7 +58,7 @@ def test_load_csv_file_loads_file(spark_session, tmpdir):
                "1,,,,,,,,LLAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA,,,\r" \
                "2,,,,,,,,LLBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB,,,\r"
     csv_file.write(csv_text)
-    loaded_df = load_csv_file(spark_session, csv_file.strpath)
+    loaded_df = load_csv_file(spark_session, csv_file.strpath, input_csv_schema())
     assert loaded_df.count() == 2
 
 
