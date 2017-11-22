@@ -68,6 +68,7 @@ def get_consumer_view_df(spark, schema_location):
     return unfiltered_consumer_view_df.select(ConsumerViewSchema.NODE_TYPE_CD,
                                               ConsumerViewSchema.VALUE,
                                               ConsumerViewSchema.CLUSTER_ID) \
+        .filter(unfiltered_consumer_view_df.cluster_id != 7) \
         .filter(unfiltered_consumer_view_df.node_type_cd != "device_id")
 
 
