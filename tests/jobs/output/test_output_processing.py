@@ -4,7 +4,7 @@ import pytest
 
 from jobs.output.output_processing import get_classifications_as_dictionary, transform_scoring_columns_for_output, \
     build_output_csv_folder_name
-from shared.utilities import GenericColumnNames, Environments, ClassificationCategoryDisplayNames, \
+from shared.constants import GenericColumnNames, Environments, ClassificationCategoryDisplayNames, \
     ClassificationCategoryAbbreviations, InputColumnNames, OutputFileNames, ClassificationSubcategory
 
 # define mark (need followup if need this)

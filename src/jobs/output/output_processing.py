@@ -1,6 +1,6 @@
 from pyspark.sql.functions import col
 
-from shared.utilities import GenericColumnNames, Environments, ClassificationSubcategory, InputColumnNames, \
+from shared.constants import GenericColumnNames, Environments, ClassificationSubcategory, InputColumnNames, \
     OutputFileNames
 
 

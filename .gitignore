@@ -73,6 +73,7 @@ aida-insights.iml
 /metastore_db/
 
 # Program output
+logs
 /output/
 /spark-warehouse/
 samples/beestest/output/*

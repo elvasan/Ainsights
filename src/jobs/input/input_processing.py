@@ -1,7 +1,7 @@
 from pyspark.sql.functions import lit, concat_ws, split, explode, when  # pylint:disable=no-name-in-module
 from pyspark.sql.types import StructField, StructType, StringType, LongType
 
-from shared.utilities import InputColumnNames, Environments, IdentifierTypes, RawInputCSVColumnNames
+from shared.constants import InputColumnNames, Environments, IdentifierTypes, RawInputCSVColumnNames
 
 ID_SEPARATOR = ':'
 
@@ -20,7 +20,7 @@ def process_input_file(spark, logger, client_name, environment):
     full_file_name = build_input_csv_file_name(environment, client_name)
 
     logger.info("input_processing: trying to read file named: {0}".format(full_file_name))
-    raw_data_frame = load_csv_file(spark, full_file_name)
+    raw_data_frame = load_csv_file(spark, full_file_name, input_csv_schema())
     logger.info("input_processing: returning transformed file")
     return transform_input_csv(raw_data_frame)
 
@@ -42,16 +42,17 @@ def build_input_csv_file_name(environment, client_name):
     return '{0}{1}/input/{2}.csv'.format(bucket_prefix, client_name, client_name)
 
 
-def load_csv_file(spark, full_file_name):
+def load_csv_file(spark, full_file_name, schema):
     """
     Loads a CSV file from a given location.
     :param spark: The spark context
     :param full_file_name: The absolute path to the location of the CSV file.
+    :param schema: The schema to apply to the csv when reading.
     :return: A DataFrame from the input CSV.
     """
     # Note: FailFast will cause Java read errors for any invalid formatted row! This will fail the whole file read
     # we need to revisit this once we understand input file validation rules
-    return spark.read.csv(full_file_name, schema=input_csv_schema(), header=True, mode='FailFast')
+    return spark.read.csv(full_file_name, schema=schema, header=True, mode='FailFast')
 
 
 def load_parquet_into_df(spark_session, file_location):
