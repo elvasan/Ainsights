@@ -31,4 +31,7 @@ build: clean
 	mkdir -p ./dist/config
 	cp ./src/main.py ./dist
 	cp ./samples/pyspark/config/application_defaults.csv ./dist/config/application_defaults.csv
+	cp ./emr-deploy/emr-config.json ./dist/config/emr-config.json
+	cp ./emr-deploy/emr-instance-groups.json ./dist/config/emr-instance-groups.json
+	cp ./emr-deploy/emr-ec2-attributes.json ./dist/config/emr-ec2-attributes.json
 	cd ./src && zip -x main.py -r ../dist/jobs.zip .
