@@ -46,7 +46,7 @@ class ClassificationColumnNames:  # pylint:disable=too-few-public-methods
 
 class ClassificationLead(ClassificationColumnNames):  # pylint:disable=too-few-public-methods
     SCHEMA_NAME = "classif_lead"
-    TOKEN = "token"
+    LEAD_ID = "lead_id"
 
 
 class ClassificationSetElementXref(ClassificationColumnNames):  # pylint:disable=too-few-public-methods

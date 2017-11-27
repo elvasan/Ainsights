@@ -6,7 +6,7 @@ from shared.constants import ClassificationLead, ClassificationSetElementXref, C
 
 def classification_lead_schema():
     return StructType(
-        [StructField(ClassificationLead.TOKEN, StringType()),
+        [StructField(ClassificationLead.LEAD_ID, StringType()),
          StructField(ClassificationLead.CLASSIF_SET_KEY, StringType())])
 
 

@@ -93,10 +93,10 @@ def join_input_to_lead_df(input_df, lead_df):
     :param lead_df: The classif_lead table as a DataFrame
     :return: A DataFrame consisting of the initial input DataFrame joined to the Classification Lead DataFrame.
     """
-    join_expression = input_df.input_id == lead_df.token
+    join_expression = input_df.input_id == lead_df.lead_id
     return input_df \
         .join(lead_df, join_expression, JoinTypes.LEFT_JOIN) \
-        .drop(ClassificationLead.TOKEN)
+        .drop(ClassificationLead.LEAD_ID)
 
 
 def join_input_to_classification_set_df(input_df, classification_set_df):
