@@ -45,7 +45,7 @@ class ClassificationColumnNames:  # pylint:disable=too-few-public-methods
 
 
 class ClassificationLead(ClassificationColumnNames):  # pylint:disable=too-few-public-methods
-    SCHEMA_NAME = "classif_lead"
+    SCHEMA_NAME = "classif_lead/classif_lead"
     LEAD_ID = "lead_id"
 
 
