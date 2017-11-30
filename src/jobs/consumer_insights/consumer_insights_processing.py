@@ -112,7 +112,7 @@ def build_consumer_view_schema_location(environment):
         bucket_prefix = Environments.LOCAL_BUCKET_PREFIX
     else:
         bucket_prefix = 's3://jornaya-{0}-{1}-prj/'.format(environment, Environments.AWS_REGION)
-    return bucket_prefix + 'cis/consumer_graph/consumer_view'
+    return bucket_prefix + 'cis/consumer_view'
 
 
 def build_lead_event_schema_location(environment):
