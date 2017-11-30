@@ -121,7 +121,7 @@ class PiiHashingColumnNames:  # pylint:disable=too-few-public-methods
 
 class ConsumerViewSchema:  # pylint:disable=too-few-public-methods
     NODE_TYPE_CD = "node_type_cd"
-    VALUE = "value"
+    NODE_VALUE = "node_value"
     CLUSTER_ID = "cluster_id"
 
 

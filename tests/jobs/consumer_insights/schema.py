@@ -27,7 +27,7 @@ def expected_consumer_insights_result_schema():
 def consumer_view_schema():
     return StructType(
         [StructField(ConsumerViewSchema.NODE_TYPE_CD, StringType()),
-         StructField(ConsumerViewSchema.VALUE, StringType()),
+         StructField(ConsumerViewSchema.NODE_VALUE, StringType()),
          StructField(ConsumerViewSchema.CLUSTER_ID, LongType()),
          StructField(LeadEventSchema.CREATION_TS, StringType())])
 

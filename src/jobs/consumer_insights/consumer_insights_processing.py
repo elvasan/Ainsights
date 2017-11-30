@@ -54,7 +54,7 @@ def get_leads_from_cluster_id_df(consumer_view_df, cluster_id_df):
     join_condition = filtered_cis_df.cluster_id == cluster_df.cluster_id
     return cluster_df.join(filtered_cis_df, join_condition, JoinTypes.LEFT_JOIN) \
         .drop(ConsumerViewSchema.CLUSTER_ID) \
-        .withColumnRenamed(ConsumerViewSchema.VALUE, PiiHashingColumnNames.INPUT_ID) \
+        .withColumnRenamed(ConsumerViewSchema.NODE_VALUE, PiiHashingColumnNames.INPUT_ID) \
         .distinct()
 
 
@@ -68,7 +68,7 @@ def join_pii_hashing_to_consumer_view_df(pii_hashing_df, consumer_view_df):
     """
     filtered_pii_hashing_df = pii_hashing_df.drop(PiiHashingColumnNames.INPUT_ID_RAW)
     join_condition = [filtered_pii_hashing_df.input_id_type == consumer_view_df.node_type_cd,
-                      filtered_pii_hashing_df.input_id == consumer_view_df.value]
+                      filtered_pii_hashing_df.input_id == consumer_view_df.node_value]
     return filtered_pii_hashing_df.join(consumer_view_df, join_condition, JoinTypes.LEFT_JOIN) \
         .select(PiiHashingColumnNames.RECORD_ID, ConsumerViewSchema.CLUSTER_ID) \
         .distinct()
@@ -83,7 +83,7 @@ def get_consumer_view_df(spark, schema_location):
     """
     unfiltered_consumer_view_df = load_parquet_into_df(spark, schema_location)
     return unfiltered_consumer_view_df.select(ConsumerViewSchema.NODE_TYPE_CD,
-                                              ConsumerViewSchema.VALUE,
+                                              ConsumerViewSchema.NODE_VALUE,
                                               ConsumerViewSchema.CLUSTER_ID) \
         .filter(unfiltered_consumer_view_df.cluster_id != 7) \
         .filter(unfiltered_consumer_view_df.node_type_cd != "device_id")
