@@ -22,7 +22,7 @@
       "spark.executor.memory": "21G",
       "spark.yarn.driver.memoryOverhead": "3072",
       "spark.driver.memory": "21G",
-      "spark.driver.maxResultSize": "3G",
+      "spark.driver.maxResultSize": "1G",
       "spark.executor.cores": "3",
       "spark.driver.cores": "3",
       "spark.default.parallelism": "294",
