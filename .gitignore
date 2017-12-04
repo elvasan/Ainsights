@@ -71,7 +71,7 @@ target/
 .idea
 .venv
 aida-insights.iml
-/metastore_db/
+metastore_db/
 
 # Program output
 logs
