@@ -40,14 +40,12 @@ def analyze(spark, logger, **job_args):  # pylint:disable=too-many-statements,to
     logger.info("PII HASHING START")
     input_data_frame = transform_raw_inputs(spark, logger, raw_input_data_frame, environment)
     input_data_frame.cache()
-    input_data_frame.collect()
     input_data_frame.show(50, False)
     logger.info("PII HASHING END")
 
     logger.info("CONSUMER INSIGHTS START")
     consumer_insights_df = retrieve_leads_from_consumer_graph(spark, environment, input_data_frame)
     consumer_insights_df.cache()
-    consumer_insights_df.collect()
     consumer_insights_df.show(50, False)
     logger.info("CONSUMER INSIGHTS END")
     logger.info("CONSUMER_INSIGHTS_DF PARTITION SIZE: {size}".format(
@@ -67,7 +65,6 @@ def analyze(spark, logger, **job_args):  # pylint:disable=too-many-statements,to
     classification_data_frame = filtered_classification_df.repartition("record_id")
     logger.info("REPARTITION OF CLASSIFICATION RESULTS DONE")
     classification_data_frame.cache()
-    classification_data_frame.collect()
     classification_data_frame.show(50, False)
     logger.info("CLASSIFICATION END")
 
