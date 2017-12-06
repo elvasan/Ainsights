@@ -64,7 +64,7 @@ def test_join_pii_hashing_to_consumer_view_df_returns_expected_values_for_one_en
     pii_hashing_df = spark_session.createDataFrame(pii_hashing_data, schema.expected_pii_hashing_schema())
 
     # Create consumer view DataFrame
-    consumer_view_data = [(Type.PHONE, 'CPAAA', 7, '2017-01-11 22:28:34.000')]
+    consumer_view_data = [(Type.PHONE, 'CPAAA', 7)]
     consumer_view_df = spark_session.createDataFrame(consumer_view_data, schema.consumer_view_schema())
 
     # Get the result of joining the pii hashing and consumer view DataFrames
@@ -92,10 +92,10 @@ def test_join_pii_hashing_to_consumer_view_df_returns_one_cluster_value_per_reco
 
     # Create consumer view DataFrame
     consumer_view_data = [
-        (Type.PHONE, 'CPAAA', 7, '2017-01-11 22:28:34.000'),
-        (Type.EMAIL, 'CEAAA', 7, '2017-01-11 22:28:34.000'),
-        (Type.LEADID, 'LLBBB', 4, '2017-01-11 22:28:34.000'),
-        (Type.EMAIL, 'CEBBB', 4, '2017-01-11 22:28:34.000')
+        (Type.PHONE, 'CPAAA', 7),
+        (Type.EMAIL, 'CEAAA', 7),
+        (Type.LEADID, 'LLBBB', 4),
+        (Type.EMAIL, 'CEBBB', 4)
     ]
     consumer_view_df = spark_session.createDataFrame(consumer_view_data, schema.consumer_view_schema())
 
@@ -114,7 +114,7 @@ def test_join_pii_hashing_to_consumer_view_df_returns_one_cluster_value_per_reco
 
 def test_get_leads_from_cluster_id_df_returns_expected_values_for_one_entry(spark_session):
     # Create a dummy consumer view DataFrame
-    consumer_view_data = [(Type.LEADID, 'LLAAA', 7, '2017-01-11 22:28:34.000')]
+    consumer_view_data = [(Type.LEADID, 'LLAAA', 7)]
     consumer_view_df = spark_session.createDataFrame(consumer_view_data, schema.consumer_view_schema())
 
     # Create a dummy cluster id DataFrame
@@ -124,33 +124,31 @@ def test_get_leads_from_cluster_id_df_returns_expected_values_for_one_entry(spar
 
     result_df = cis.get_leads_from_cluster_id_df(consumer_view_df, cluster_id_df)
     expected_column_names = [PiiHashingColumnNames.RECORD_ID,
-                             PiiHashingColumnNames.INPUT_ID,
-                             LeadEventSchema.CREATION_TS]
+                             PiiHashingColumnNames.INPUT_ID]
     assert sorted(expected_column_names) == sorted(result_df.columns)
 
     result_dict = result_df.collect()[0].asDict()
     assert result_dict['record_id'] == 100
     assert result_dict['input_id'] == 'LLAAA'
-    assert result_dict['creation_ts'] == '2017-01-11 22:28:34.000'
 
 
 def test_get_leads_from_cluster_id_df_returns_expected_values_for_multiple_entries(spark_session):
     # Create a dummy consumer view DataFrame
     consumer_view_data = [
-        (Type.LEADID, 'LLAAA', 7, '2017-01-11 22:28:34.000'),
-        (Type.PHONE, 'CPAAA', 7, '2017-01-11 22:28:34.000'),
-        (Type.EMAIL, 'CEAAA', 7, '2017-01-11 22:28:34.000'),
-        (Type.LEADID, 'LLXXX', 7, '2017-01-11 22:28:34.000'),
-        (Type.LEADID, 'LLBBB', 4, '2017-01-11 22:28:34.000'),
-        (Type.EMAIL, 'CEBBB', 4, '2017-01-11 22:28:34.000'),
-        (Type.LEADID, 'LLYYY', 4, '2017-01-11 22:28:34.000'),
-        (Type.LEADID, 'LLZZZ', 4, '2017-01-11 22:28:34.000'),
-        (Type.PHONE, 'CPCCC', 1, '2017-01-11 22:28:34.000'),
-        (Type.LEADID, 'LLTTT', 1, '2017-01-11 22:28:34.000'),
-        (Type.LEADID, 'LLUUU', 14, '2017-01-11 22:28:34.000'),
-        (Type.LEADID, 'LLVVV', 14, '2017-01-11 22:28:34.000'),
-        (Type.LEADID, 'LLWWW', 14, '2017-01-11 22:28:34.000'),
-        (Type.LEADID, 'LLPPP', 20, '2017-01-11 22:28:34.000'),
+        (Type.LEADID, 'LLAAA', 7),
+        (Type.PHONE, 'CPAAA', 7),
+        (Type.EMAIL, 'CEAAA', 7),
+        (Type.LEADID, 'LLXXX', 7),
+        (Type.LEADID, 'LLBBB', 4),
+        (Type.EMAIL, 'CEBBB', 4),
+        (Type.LEADID, 'LLYYY', 4),
+        (Type.LEADID, 'LLZZZ', 4),
+        (Type.PHONE, 'CPCCC', 1),
+        (Type.LEADID, 'LLTTT', 1),
+        (Type.LEADID, 'LLUUU', 14),
+        (Type.LEADID, 'LLVVV', 14),
+        (Type.LEADID, 'LLWWW', 14),
+        (Type.LEADID, 'LLPPP', 20),
     ]
     consumer_view_df = spark_session.createDataFrame(consumer_view_data, schema.consumer_view_schema())
 
@@ -168,46 +166,45 @@ def test_get_leads_from_cluster_id_df_returns_expected_values_for_multiple_entri
     # Get the results and assert on the column names and the number of expected rows.
     result_df = cis.get_leads_from_cluster_id_df(consumer_view_df, cluster_id_df)
     expected_column_names = [PiiHashingColumnNames.RECORD_ID,
-                             PiiHashingColumnNames.INPUT_ID,
-                             LeadEventSchema.CREATION_TS]
+                             PiiHashingColumnNames.INPUT_ID]
     assert sorted(expected_column_names) == sorted(result_df.columns)
     # 2 for record id 7, 3 for record id 4, 1 for record id 1, 3 for record id 14, and 1 row for the null value
     assert 10 == result_df.count()
 
     # Build a result DataFrame to check if the result is valid
-    expected_result_data = [(100, 'LLXXX', '2017-01-11 22:28:34.000'),
-                            (100, 'LLAAA', '2017-01-11 22:28:34.000'),
-                            (200, 'LLYYY', '2017-01-11 22:28:34.000'),
-                            (200, 'LLZZZ', '2017-01-11 22:28:34.000'),
-                            (200, 'LLBBB', '2017-01-11 22:28:34.000'),
-                            (300, None, None),
-                            (400, 'LLTTT', '2017-01-11 22:28:34.000'),
-                            (500, 'LLUUU', '2017-01-11 22:28:34.000'),
-                            (500, 'LLVVV', '2017-01-11 22:28:34.000'),
-                            (500, 'LLWWW', '2017-01-11 22:28:34.000'),
+    expected_result_data = [(100, 'LLXXX'),
+                            (100, 'LLAAA'),
+                            (200, 'LLYYY'),
+                            (200, 'LLZZZ'),
+                            (200, 'LLBBB'),
+                            (300, None),
+                            (400, 'LLTTT'),
+                            (500, 'LLUUU'),
+                            (500, 'LLVVV'),
+                            (500, 'LLWWW'),
                             ]
     expected_result_df = spark_session.createDataFrame(expected_result_data,
-                                                       schema.expected_consumer_insights_result_schema())
+                                                       schema.expected_consumer_insights_no_lead_info_schema())
     assert 0 == result_df.subtract(expected_result_df).count()
 
 
 def test_join_lead_ids_to_lead_event_returns_expected_values(spark_session):
     lead_id_data = [(1, 'LLAAA'), (1, 'LLBBB'), (2, 'LLCCC'), (3, 'LLDDD'), (4, None)]
     lead_id_df = spark_session.createDataFrame(lead_id_data, schema.lead_id_schema())
-    lead_event_data = [('LLAAA', '2017-01-11 22:28:34.000'),
-                       ('LLBBB', '2017-02-11 22:28:34.000'),
-                       ('LLCCC', '2017-03-11 22:28:34.000'),
-                       ('LLDDD', '2017-04-11 22:28:34.000')]
+    lead_event_data = [('LLAAA', '2017-01-11 22:28:34.000', 'CKAAA'),
+                       ('LLBBB', '2017-02-11 22:28:34.000', 'CKBBB'),
+                       ('LLCCC', '2017-03-11 22:28:34.000', 'CKCCC'),
+                       ('LLDDD', '2017-04-11 22:28:34.000', 'CKDDD')]
     lead_event_df = spark_session.createDataFrame(lead_event_data, schema.lead_event_schema())
 
     result_df = cis.join_lead_ids_to_lead_event(lead_id_df, lead_event_df)
     assert 5 == result_df.count()
 
-    expected_result_data = [(1, 'LLAAA', '2017-01-11 22:28:34.000'),
-                            (1, 'LLBBB', '2017-02-11 22:28:34.000'),
-                            (2, 'LLCCC', '2017-03-11 22:28:34.000'),
-                            (3, 'LLDDD', '2017-04-11 22:28:34.000'),
-                            (4, None, None)
+    expected_result_data = [(1, 'LLAAA', '2017-01-11 22:28:34.000', 'CKAAA'),
+                            (1, 'LLBBB', '2017-02-11 22:28:34.000', 'CKBBB'),
+                            (2, 'LLCCC', '2017-03-11 22:28:34.000', 'CKCCC'),
+                            (3, 'LLDDD', '2017-04-11 22:28:34.000', 'CKDDD'),
+                            (4, None, None, None)
                             ]
     expected_result_df = spark_session.createDataFrame(expected_result_data,
                                                        schema.expected_consumer_insights_result_schema())

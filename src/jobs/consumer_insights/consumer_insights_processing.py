@@ -33,7 +33,8 @@ def join_lead_ids_to_lead_event(lead_id_df, lead_event_df):
     :return: A DataFrame consisting of record_id, lead_id, and creation_ts
     """
     return lead_id_df.join(lead_event_df, lead_id_df.input_id == lead_event_df.lead_id, JoinTypes.LEFT_JOIN) \
-        .select(PiiHashingColumnNames.RECORD_ID, PiiHashingColumnNames.INPUT_ID, LeadEventSchema.CREATION_TS)
+        .select(PiiHashingColumnNames.RECORD_ID, PiiHashingColumnNames.INPUT_ID, LeadEventSchema.CREATION_TS,
+                LeadEventSchema.CAMPAIGN_KEY)
 
 
 def get_leads_from_cluster_id_df(consumer_view_df, cluster_id_df):
@@ -97,7 +98,7 @@ def get_lead_event_df(spark, schema_location):
     :return: A DataFrame consisting of a lead id and it's creation timestamp
     """
     lead_event_df = load_parquet_into_df(spark, schema_location)
-    return lead_event_df.select(LeadEventSchema.LEAD_ID, LeadEventSchema.SERVER_GMT_TS) \
+    return lead_event_df.select(LeadEventSchema.LEAD_ID, LeadEventSchema.CAMPAIGN_KEY, LeadEventSchema.SERVER_GMT_TS) \
         .withColumnRenamed(LeadEventSchema.SERVER_GMT_TS, LeadEventSchema.CREATION_TS)
 
 
