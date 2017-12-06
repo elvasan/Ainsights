@@ -17,19 +17,25 @@ def expected_pii_hashing_consumer_view_transformed_schema():
          StructField(ConsumerViewSchema.CLUSTER_ID, LongType())])
 
 
+def expected_consumer_insights_no_lead_info_schema():
+    return StructType(
+        [StructField(InputColumnNames.RECORD_ID, LongType()),
+         StructField(InputColumnNames.INPUT_ID, StringType())])
+
+
 def expected_consumer_insights_result_schema():
     return StructType(
         [StructField(InputColumnNames.RECORD_ID, LongType()),
          StructField(InputColumnNames.INPUT_ID, StringType()),
-         StructField(LeadEventSchema.CREATION_TS, StringType())])
+         StructField(LeadEventSchema.CREATION_TS, StringType()),
+         StructField(LeadEventSchema.CAMPAIGN_KEY, StringType())])
 
 
 def consumer_view_schema():
     return StructType(
         [StructField(ConsumerViewSchema.NODE_TYPE_CD, StringType()),
          StructField(ConsumerViewSchema.NODE_VALUE, StringType()),
-         StructField(ConsumerViewSchema.CLUSTER_ID, LongType()),
-         StructField(LeadEventSchema.CREATION_TS, StringType())])
+         StructField(ConsumerViewSchema.CLUSTER_ID, LongType())])
 
 
 def lead_id_schema():
@@ -41,4 +47,5 @@ def lead_id_schema():
 def lead_event_schema():
     return StructType(
         [StructField(InputColumnNames.LEAD_ID, StringType()),
-         StructField(LeadEventSchema.CREATION_TS, StringType())])
+         StructField(LeadEventSchema.CREATION_TS, StringType()),
+         StructField(LeadEventSchema.CAMPAIGN_KEY, StringType())])
