@@ -86,7 +86,7 @@ def get_consumer_view_df(spark, schema_location):
     return unfiltered_consumer_view_df.select(ConsumerViewSchema.NODE_TYPE_CD,
                                               ConsumerViewSchema.NODE_VALUE,
                                               ConsumerViewSchema.CLUSTER_ID) \
-        .filter(unfiltered_consumer_view_df.cluster_id != 7) \
+        .filter(unfiltered_consumer_view_df.cluster_id != 0) \
         .filter(unfiltered_consumer_view_df.node_type_cd != "device_id")
 
 
@@ -113,6 +113,10 @@ def build_consumer_view_schema_location(environment):
         bucket_prefix = Environments.LOCAL_BUCKET_PREFIX
     else:
         bucket_prefix = 's3://jornaya-{0}-{1}-prj/'.format(environment, Environments.AWS_REGION)
+
+    # Temp workaround in DEV for CI Team to use alternate view
+    if environment == Environments.DEV:
+        return bucket_prefix + 'cis/consumer_view_papaya'
     return bucket_prefix + 'cis/consumer_view'
 
 

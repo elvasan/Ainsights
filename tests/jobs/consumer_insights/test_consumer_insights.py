@@ -15,7 +15,7 @@ def test_build_consumer_view_schema_location_returns_correct_local_schema():
 
 def test_build_consumer_view_schema_location_returns_correct_dev_schema():
     result = cis.build_consumer_view_schema_location(Environments.DEV)
-    assert 's3://jornaya-dev-us-east-1-prj/cis/consumer_view' == result
+    assert 's3://jornaya-dev-us-east-1-prj/cis/consumer_view_papaya' == result
 
 
 def test_build_consumer_view_schema_location_returns_correct_qa_schema():
