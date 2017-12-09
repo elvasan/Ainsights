@@ -27,6 +27,8 @@ class GenericColumnNames:  # pylint:disable=too-few-public-methods
 
 
 class OutputFileNames:  # pylint:disable=too-few-public-methods
+    INTERNAL = 'results_internal'
+    EXTERNAL = 'results_external'
     TIME_FORMAT = "%Y%m%d%H%M"
     PRODUCT_NAME = 'aidainsights'
 
@@ -149,3 +151,9 @@ class JoinTypes:  # pylint:disable=too-few-public-methods
     LEFT_JOIN = "left"
     LEFT_ANTI_JOIN = "left_anti"
     LEFT_OUTER_JOIN = "left_outer"
+
+
+class ThresholdValues:  # pylint:disable=too-few-public-methods
+    NOT_SEEN = "NOT_SEEN"
+    IN_MARKET = "IN_MARKET"
+    IN_MARKET_HIGH = "IN_MARKET_H"
