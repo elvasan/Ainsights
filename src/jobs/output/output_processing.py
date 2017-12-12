@@ -32,7 +32,7 @@ def get_classifications_as_dictionary(classify_subcategory_df):
     return class_dict
 
 
-def build_output_csv_folder_name(environment, client_name, time_stamp):
+def build_output_csv_folder_name(environment, client_name, time_stamp, location):
     """
     Builds a path for writing the output of the program.
     Folder name should contain environment, aws_region, client_name
@@ -41,6 +41,7 @@ def build_output_csv_folder_name(environment, client_name, time_stamp):
     :param environment: The current execution environment
     :param client_name: The name of the client for which aida insights is running
     :param time_stamp: The time the job was launched
+    :param location: One of internal or external
     :return: A string containing the output path
     """
     if environment == Environments.LOCAL:
@@ -48,22 +49,26 @@ def build_output_csv_folder_name(environment, client_name, time_stamp):
     else:
         bucket_prefix = 's3://jornaya-{0}-{1}-aida-insights/'.format(environment, Environments.AWS_REGION)
     time_stamp_formatted = time_stamp.strftime(OutputFileNames.TIME_FORMAT)
-    return '{0}{1}/output/{2}_{3}_{4}'.format(bucket_prefix,
-                                              client_name,
-                                              client_name,
-                                              OutputFileNames.PRODUCT_NAME,
-                                              time_stamp_formatted)
+    return '{0}{1}/output/{2}_{3}_{4}/{5}'.format(bucket_prefix,
+                                                  client_name,
+                                                  client_name,
+                                                  OutputFileNames.PRODUCT_NAME,
+                                                  time_stamp_formatted,
+                                                  location)
 
 
-def write_output(output_path, classification_subcategory_df, scored_results_df):
+def write_output(environment, client_name, time_stamp, output_df, location):
     """
     Writes the output of AIDA Insights to a given location in CSV format.
-    :param output_path: The output path used to write a csv
-    :param classification_subcategory_df:
-    :param scored_results_df:
+    :param environment: The current environment (Dev, Qa, Staging, etc..)
+    :param client_name: The name of the client
+    :param time_stamp: A timestamp in UTC format
+    :param output_df: The DataFrame being written
+    :param location: One of internal or external
+    :return:
     """
-    results_df = transform_scoring_columns_for_output(classification_subcategory_df, scored_results_df)
-    results_df \
+    output_path = build_output_csv_folder_name(environment, client_name, time_stamp, location)
+    output_df \
         .coalesce(1) \
         .write \
         .csv(path=output_path, mode="overwrite", header="True")

@@ -1,6 +1,34 @@
-from pyspark.sql.functions import sum  # pylint:disable=redefined-builtin
+from pyspark.sql.functions import sum, when  # pylint:disable=redefined-builtin
 
-from shared.constants import ClassificationSubcategory, InputColumnNames, JoinTypes
+from shared.constants import ClassificationSubcategory, InputColumnNames, JoinTypes, ConfigurationOptions, \
+    ThresholdValues
+
+
+def apply_thresholds_to_scored_df(scored_df, app_config_df):
+    """
+    Apply frequency thresholds to scored (counted) industries to produce the external customer file.
+    :param scored_df: A DataFrame consisting of scored industries
+    :param app_config_df: A DataFrame containing frequency threshold configuration
+    :return: A DataFrame with customer facing values for each industry
+    """
+    frequency_thresholds = app_config_df.filter(app_config_df.option == ConfigurationOptions.FREQUENCY_THRESHOLD) \
+        .select(app_config_df.config_abbrev, app_config_df.value)
+
+    # Get a dict of threshold config values so we can map them to the values in the DataFrame
+    # Ex: {'auto_sales': 4, 'education': 6}
+    threshold_list = [[i.config_abbrev, int(i.value)] for i in frequency_thresholds.collect()]
+    threshold_dict = dict(threshold_list)
+
+    # If a column value is greater than the threshold value the it should be set as 'In Market High Interest'
+    # If a column value is 0 then the consumer was 'Not Seen' and if the column value is less than or equal to
+    # the threshold value, then we should just label them as 'In Market'
+    for column in scored_df.columns:
+        if column in threshold_dict:
+            scored_df = scored_df \
+                .withColumn(column, (when(scored_df[column] > threshold_dict[column], ThresholdValues.IN_MARKET_HIGH)
+                                     .otherwise(when(scored_df[column] == 0, ThresholdValues.NOT_SEEN)
+                                                .otherwise(ThresholdValues.IN_MARKET))))
+    return scored_df
 
 
 def score_file(classification_subcategories_df, classified_inputs_df):

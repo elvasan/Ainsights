@@ -5,9 +5,10 @@ from jobs.classification.classify import classify, get_classification_subcategor
 from jobs.consumer_insights.consumer_insights_processing import retrieve_leads_from_consumer_graph
 from jobs.init.config import get_application_config_df
 from jobs.input.input_processing import process_input_file
-from jobs.output.output_processing import write_output, build_output_csv_folder_name
+from jobs.output.output_processing import write_output, transform_scoring_columns_for_output
 from jobs.pii_hashing.pii_hashing import transform_raw_inputs
-from jobs.scoring.scoring import score_file
+from jobs.scoring.scoring import score_file, apply_thresholds_to_scored_df
+from shared.constants import OutputFileNames
 
 
 def analyze(spark, logger, **job_args):  # pylint:disable=too-many-statements,too-many-locals
@@ -22,7 +23,6 @@ def analyze(spark, logger, **job_args):  # pylint:disable=too-many-statements,to
     """
     client_name = job_args["client_name"]
     environment = job_args["environment"]
-
     time_stamp = datetime.datetime.utcnow()
 
     logger.info("STARTING UP APPLICATION")
@@ -70,20 +70,29 @@ def analyze(spark, logger, **job_args):  # pylint:disable=too-many-statements,to
 
     logger.info("SCORING START")
     classify_subcategory_df = get_classification_subcategory_df(spark, environment, logger)
-    scored_data_frame = score_file(classify_subcategory_df, classification_data_frame)
-    logger.info(
-        "CLASSIFY_SUBCATEGORY_DF PARTITION SIZE: {size}".format(size=classify_subcategory_df.rdd.getNumPartitions()))
-    logger.info("SCORED_DATA_FRAME PARTITION SIZE: {size}".format(size=scored_data_frame.rdd.getNumPartitions()))
+    internal_scored_df = score_file(classify_subcategory_df, classification_data_frame)
+    external_scored_df = apply_thresholds_to_scored_df(internal_scored_df, app_config_df)
+    # Once we have the scored data frame, apply the frequency thresholds to get the external customer file
+    logger.info("CLASSIFY_SUBCATEGORY_DF PARTITION SIZE: {size}"
+                .format(size=classify_subcategory_df.rdd.getNumPartitions()))
+    logger.info("SCORED_DATA_FRAME PARTITION SIZE: {size}"
+                .format(size=internal_scored_df.rdd.getNumPartitions()))
 
     # cache final Scores (need the show statements to ensure action is fired)
-    scored_data_frame.cache()
-    scored_data_frame.collect()
-    scored_data_frame.show(50, False)
+    internal_scored_df.cache()
+    internal_scored_df.collect()
+    internal_scored_df.show(50, False)
+
+    external_scored_df.cache()
+    external_scored_df.collect()
+    external_scored_df.show(50, False)
     logger.info("SCORING END")
     # end caching
 
     logger.info("WRITE OUTPUT START")
-    output_path = build_output_csv_folder_name(environment, client_name, time_stamp)
-    logger.info("WRITING OUTPUT FILE TO {path}".format(path=output_path))
-    write_output(output_path, classify_subcategory_df, scored_data_frame)
+    internal_output_df = transform_scoring_columns_for_output(classify_subcategory_df, internal_scored_df)
+    external_output_df = transform_scoring_columns_for_output(classify_subcategory_df, external_scored_df)
+
+    write_output(environment, client_name, time_stamp, internal_output_df, OutputFileNames.INTERNAL)
+    write_output(environment, client_name, time_stamp, external_output_df, OutputFileNames.EXTERNAL)
     logger.info("WRITE OUTPUT END")

@@ -60,38 +60,73 @@ def test_transform_output_scoring_columns_with_non_translatable_column(spark_ses
     assert extracted_row_values == raw_input_data
 
 
-def test_build_output_csv_folder_name_dev():
+def test_build_internal_output_csv_folder_name_dev():
     the_time = datetime.strptime("201710241230", OutputFileNames.TIME_FORMAT)
-    full_name = build_output_csv_folder_name(Environments.DEV, "beestest", the_time)
-    expected_name = 's3://jornaya-dev-us-east-1-aida-insights/beestest/output/beestest_aidainsights_201710241230'
+    full_name = build_output_csv_folder_name(Environments.DEV, "beestest", the_time, OutputFileNames.INTERNAL)
+    expected_name = 's3://jornaya-dev-us-east-1-aida-insights/beestest/output/beestest_aidainsights_201710241230/results_internal'
     assert full_name == expected_name
 
 
-def test_build_output_csv_folder_name_qa():
+def test_build_internal_output_csv_folder_name_qa():
     the_time = datetime.strptime("201710310130", OutputFileNames.TIME_FORMAT)
-    full_name = build_output_csv_folder_name(Environments.QA, "beestest", the_time)
-    expected_name = 's3://jornaya-qa-us-east-1-aida-insights/beestest/output/beestest_aidainsights_201710310130'
+    full_name = build_output_csv_folder_name(Environments.QA, "beestest", the_time, OutputFileNames.INTERNAL)
+    expected_name = 's3://jornaya-qa-us-east-1-aida-insights/beestest/output/beestest_aidainsights_201710310130/results_internal'
     assert full_name == expected_name
 
 
-def test_build_output_csv_folder_name_staging():
+def test_build_internal_output_csv_folder_name_staging():
     the_time = datetime.strptime("201710310100", OutputFileNames.TIME_FORMAT)
-    full_name = build_output_csv_folder_name(Environments.STAGING, "beestest", the_time)
-    expected_name = 's3://jornaya-staging-us-east-1-aida-insights/beestest/output/beestest_aidainsights_201710310100'
+    full_name = build_output_csv_folder_name(Environments.STAGING, "beestest", the_time, OutputFileNames.INTERNAL)
+    expected_name = 's3://jornaya-staging-us-east-1-aida-insights/beestest/output/beestest_aidainsights_201710310100/results_internal'
     assert full_name == expected_name
 
 
-def test_build_output_csv_folder_name_prod():
+def test_build_internal_output_csv_folder_name_prod():
     the_time = datetime.strptime("201710241230", OutputFileNames.TIME_FORMAT)
-    full_name = build_output_csv_folder_name(Environments.PROD, "beestest", the_time)
-    expected_name = 's3://jornaya-prod-us-east-1-aida-insights/beestest/output/beestest_aidainsights_201710241230'
+    full_name = build_output_csv_folder_name(Environments.PROD, "beestest", the_time, OutputFileNames.INTERNAL)
+    expected_name = 's3://jornaya-prod-us-east-1-aida-insights/beestest/output/beestest_aidainsights_201710241230/results_internal'
     assert full_name == expected_name
 
 
-def test_build_output_csv_folder_name_local():
+def test_build_internal_output_csv_folder_name_local():
     the_time = datetime.strptime("201710241230", OutputFileNames.TIME_FORMAT)
-    full_name = build_output_csv_folder_name(Environments.LOCAL, "beestest", the_time)
-    expected_name = '../samples/beestest/output/beestest_aidainsights_201710241230'
+    full_name = build_output_csv_folder_name(Environments.LOCAL, "beestest", the_time, OutputFileNames.INTERNAL)
+    expected_name = '../samples/beestest/output/beestest_aidainsights_201710241230/results_internal'
+    assert full_name == expected_name
+
+
+def test_build_external_output_csv_folder_name_dev():
+    the_time = datetime.strptime("201710241230", OutputFileNames.TIME_FORMAT)
+    full_name = build_output_csv_folder_name(Environments.DEV, "beestest", the_time, OutputFileNames.EXTERNAL)
+    expected_name = 's3://jornaya-dev-us-east-1-aida-insights/beestest/output/beestest_aidainsights_201710241230/results_external'
+    assert full_name == expected_name
+
+
+def test_build_external_output_csv_folder_name_qa():
+    the_time = datetime.strptime("201710310130", OutputFileNames.TIME_FORMAT)
+    full_name = build_output_csv_folder_name(Environments.QA, "beestest", the_time, OutputFileNames.EXTERNAL)
+    expected_name = 's3://jornaya-qa-us-east-1-aida-insights/beestest/output/beestest_aidainsights_201710310130/results_external'
+    assert full_name == expected_name
+
+
+def test_build_external_output_csv_folder_name_staging():
+    the_time = datetime.strptime("201710310100", OutputFileNames.TIME_FORMAT)
+    full_name = build_output_csv_folder_name(Environments.STAGING, "beestest", the_time, OutputFileNames.EXTERNAL)
+    expected_name = 's3://jornaya-staging-us-east-1-aida-insights/beestest/output/beestest_aidainsights_201710310100/results_external'
+    assert full_name == expected_name
+
+
+def test_build_external_output_csv_folder_name_prod():
+    the_time = datetime.strptime("201710241230", OutputFileNames.TIME_FORMAT)
+    full_name = build_output_csv_folder_name(Environments.PROD, "beestest", the_time, OutputFileNames.EXTERNAL)
+    expected_name = 's3://jornaya-prod-us-east-1-aida-insights/beestest/output/beestest_aidainsights_201710241230/results_external'
+    assert full_name == expected_name
+
+
+def test_build_external_output_csv_folder_name_local():
+    the_time = datetime.strptime("201710241230", OutputFileNames.TIME_FORMAT)
+    full_name = build_output_csv_folder_name(Environments.LOCAL, "beestest", the_time, OutputFileNames.EXTERNAL)
+    expected_name = '../samples/beestest/output/beestest_aidainsights_201710241230/results_external'
     assert full_name == expected_name
 
 
