@@ -1,8 +1,8 @@
 import pytest
 
 from src.jobs.consumer_insights import consumer_insights_processing as cis
-from src.shared.constants import Environments, ConsumerViewSchema, PiiHashingColumnNames, LeadEventSchema, \
-    IdentifierTypes as Type
+from src.shared.constants import Environments, ConsumerViewSchema, PiiHashingColumnNames, IdentifierTypes as Type
+from tests.helpers import extract_rows_for_col
 from tests.jobs.consumer_insights import schema
 
 spark_session_enabled = pytest.mark.usefixtures("spark_session")
@@ -210,8 +210,3 @@ def test_join_lead_ids_to_lead_event_returns_expected_values(spark_session):
                                                        schema.expected_consumer_insights_result_schema())
 
     assert 0 == result_df.subtract(expected_result_df).count()
-
-
-# TODO: DRY
-def extract_rows_for_col(data_frame, col_name):
-    return [i[col_name] for i in data_frame.select(col_name).collect()]

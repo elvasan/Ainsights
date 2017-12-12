@@ -5,6 +5,7 @@ from jobs.init import config
 from jobs.scoring import scoring
 from shared.constants import ClassificationSubcategory, InputColumnNames, ClassificationCategoryAbbreviations, \
     ThresholdValues, ConfigurationOptions
+from tests.helpers import extract_rows_for_col_with_order
 
 # define mark (need followup if need this)
 spark_session_enabled = pytest.mark.usefixtures("spark_session")
@@ -34,9 +35,9 @@ def test_flatten_subcategories_returns_rows_with_key_and_abbreviation(spark_sess
                      ClassificationCategoryAbbreviations.LEGAL,
                      ClassificationCategoryAbbreviations.HOME_SERVICES,
                      ClassificationCategoryAbbreviations.OTHER]
-    extracted_row_values = extract_rows_for_col(result_df,
-                                                expected_cols,
-                                                ClassificationSubcategory.CLASSIF_SUBCATEGORY_KEY)
+    extracted_row_values = extract_rows_for_col_with_order(result_df,
+                                                           expected_cols,
+                                                           ClassificationSubcategory.CLASSIF_SUBCATEGORY_KEY)
     assert sorted(result_df.schema.names) == sorted(expected_cols)
     assert expected_results == extracted_row_values
 
@@ -67,9 +68,9 @@ def test_score_file_transforms_with_single_values_for_each_subcategory(spark_ses
         [80, 0, 0, 0, 0, 0, 0, 0, 1, 0],
         [90, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     ]
-    extracted_row_values = extract_rows_for_col(result_df,
-                                                all_expected_subcategory_column_names(),
-                                                InputColumnNames.RECORD_ID)
+    extracted_row_values = extract_rows_for_col_with_order(result_df,
+                                                           all_expected_subcategory_column_names(),
+                                                           InputColumnNames.RECORD_ID)
     assert expected_results == extracted_row_values
 
 
@@ -84,9 +85,9 @@ def test_score_file_transforms_with_multiple_values_for_each_classification_freq
         [10, 3, 1, 0, 0, 0, 1, 0, 0, 0],
         [20, 0, 1, 1, 1, 2, 0, 0, 0, 0]
     ]
-    extracted_row_values = extract_rows_for_col(result_df,
-                                                all_expected_subcategory_column_names(),
-                                                InputColumnNames.RECORD_ID)
+    extracted_row_values = extract_rows_for_col_with_order(result_df,
+                                                           all_expected_subcategory_column_names(),
+                                                           InputColumnNames.RECORD_ID)
     assert expected_results == extracted_row_values
 
 
@@ -120,9 +121,9 @@ def test_join_classified_inputs_to_subcategories_returns_flat_results(spark_sess
         [10, 1, 0, 0, 0, 0, 0, 0, 0, 0],
         [20, 0, 0, 1, 0, 0, 0, 0, 0, 0]
     ]
-    extracted_row_values = extract_rows_for_col(result_df,
-                                                all_expected_subcategory_column_names(),
-                                                InputColumnNames.RECORD_ID)
+    extracted_row_values = extract_rows_for_col_with_order(result_df,
+                                                           all_expected_subcategory_column_names(),
+                                                           InputColumnNames.RECORD_ID)
     assert expected_results == extracted_row_values
 
 
@@ -140,9 +141,9 @@ def test_join_classified_inputs_to_subcategories_returns_zeros_for_no_classifica
         [20, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # row should be all zeros
         [30, 0, 0, 1, 0, 0, 0, 0, 0, 0]
     ]
-    extracted_row_values = extract_rows_for_col(result_df,
-                                                all_expected_subcategory_column_names(),
-                                                InputColumnNames.RECORD_ID)
+    extracted_row_values = extract_rows_for_col_with_order(result_df,
+                                                           all_expected_subcategory_column_names(),
+                                                           InputColumnNames.RECORD_ID)
     assert expected_results == extracted_row_values
 
 
@@ -162,9 +163,9 @@ def test_score_flat_results_by_frequency_sums_all_rows_correctly(spark_session):
         [20, 0, 2, 0, 0, 0, 0, 0, 0, 0],
         [30, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     ]
-    extracted_row_values = extract_rows_for_col(results_df,
-                                                all_expected_subcategory_column_names(),
-                                                InputColumnNames.RECORD_ID)
+    extracted_row_values = extract_rows_for_col_with_order(results_df,
+                                                           all_expected_subcategory_column_names(),
+                                                           InputColumnNames.RECORD_ID)
     assert expected_results == extracted_row_values
 
 
@@ -185,8 +186,8 @@ def test_apply_thresholds_to_scored_df_with_varying_scores_returns_multiple_in_m
                      (ConfigurationOptions.FREQUENCY_THRESHOLD, ClassificationCategoryAbbreviations.OTHER, 2)]
     app_config_df = spark_session.createDataFrame(config_values, config.configuration_schema())
     external_result_df = scoring.apply_thresholds_to_scored_df(scoring_df, app_config_df)
-    results = extract_rows_for_col(external_result_df, all_expected_subcategory_column_names(),
-                                   InputColumnNames.RECORD_ID)
+    results = extract_rows_for_col_with_order(external_result_df, all_expected_subcategory_column_names(),
+                                              InputColumnNames.RECORD_ID)
     assert results == [[100,
                         ThresholdValues.NOT_SEEN,
                         ThresholdValues.IN_MARKET,
@@ -218,8 +219,8 @@ def test_apply_thresholds_to_scored_df_with_multiple_rows_returns_values_for_all
                      (ConfigurationOptions.FREQUENCY_THRESHOLD, ClassificationCategoryAbbreviations.OTHER, 2)]
     app_config_df = spark_session.createDataFrame(config_values, config.configuration_schema())
     external_result_df = scoring.apply_thresholds_to_scored_df(scoring_df, app_config_df)
-    results = extract_rows_for_col(external_result_df, all_expected_subcategory_column_names(),
-                                   InputColumnNames.RECORD_ID)
+    results = extract_rows_for_col_with_order(external_result_df, all_expected_subcategory_column_names(),
+                                              InputColumnNames.RECORD_ID)
     assert results == [
         [100,
          ThresholdValues.NOT_SEEN,
@@ -267,9 +268,10 @@ def test_apply_thresholds_to_scored_df_with_auto_value_greater_than_threshold_re
     config_values = [(ConfigurationOptions.FREQUENCY_THRESHOLD, ClassificationCategoryAbbreviations.AUTO_SALES, 3)]
     app_config_df = spark_session.createDataFrame(config_values, config.configuration_schema())
     external_result_df = scoring.apply_thresholds_to_scored_df(scoring_df, app_config_df)
-    results = extract_rows_for_col(external_result_df,
-                                   [InputColumnNames.RECORD_ID, ClassificationCategoryAbbreviations.AUTO_SALES],
-                                   InputColumnNames.RECORD_ID)
+    results = extract_rows_for_col_with_order(external_result_df,
+                                              [InputColumnNames.RECORD_ID,
+                                               ClassificationCategoryAbbreviations.AUTO_SALES],
+                                              InputColumnNames.RECORD_ID)
     assert results == [[100, ThresholdValues.IN_MARKET_HIGH]]
 
 
@@ -283,9 +285,10 @@ def test_apply_thresholds_to_scored_df_with_auto_value_equal_to_threshold_return
     config_values = [(ConfigurationOptions.FREQUENCY_THRESHOLD, ClassificationCategoryAbbreviations.AUTO_SALES, 3)]
     app_config_df = spark_session.createDataFrame(config_values, config.configuration_schema())
     external_result_df = scoring.apply_thresholds_to_scored_df(scoring_df, app_config_df)
-    results = extract_rows_for_col(external_result_df,
-                                   [InputColumnNames.RECORD_ID, ClassificationCategoryAbbreviations.AUTO_SALES],
-                                   InputColumnNames.RECORD_ID)
+    results = extract_rows_for_col_with_order(external_result_df,
+                                              [InputColumnNames.RECORD_ID,
+                                               ClassificationCategoryAbbreviations.AUTO_SALES],
+                                              InputColumnNames.RECORD_ID)
     assert results == [[100, ThresholdValues.IN_MARKET]]
 
 
@@ -299,9 +302,10 @@ def test_apply_thresholds_to_scored_df_with_auto_value_less_than_threshold_retur
     config_values = [(ConfigurationOptions.FREQUENCY_THRESHOLD, ClassificationCategoryAbbreviations.AUTO_SALES, 3)]
     app_config_df = spark_session.createDataFrame(config_values, config.configuration_schema())
     external_result_df = scoring.apply_thresholds_to_scored_df(scoring_df, app_config_df)
-    results = extract_rows_for_col(external_result_df,
-                                   [InputColumnNames.RECORD_ID, ClassificationCategoryAbbreviations.AUTO_SALES],
-                                   InputColumnNames.RECORD_ID)
+    results = extract_rows_for_col_with_order(external_result_df,
+                                              [InputColumnNames.RECORD_ID,
+                                               ClassificationCategoryAbbreviations.AUTO_SALES],
+                                              InputColumnNames.RECORD_ID)
     assert results == [[100, ThresholdValues.IN_MARKET]]
 
 
@@ -315,9 +319,10 @@ def test_apply_thresholds_to_scored_df_with_auto_value_zero_returns_not_seen(spa
     config_values = [(ConfigurationOptions.FREQUENCY_THRESHOLD, ClassificationCategoryAbbreviations.AUTO_SALES, 3)]
     app_config_df = spark_session.createDataFrame(config_values, config.configuration_schema())
     external_result_df = scoring.apply_thresholds_to_scored_df(scoring_df, app_config_df)
-    results = extract_rows_for_col(external_result_df,
-                                   [InputColumnNames.RECORD_ID, ClassificationCategoryAbbreviations.AUTO_SALES],
-                                   InputColumnNames.RECORD_ID)
+    results = extract_rows_for_col_with_order(external_result_df,
+                                              [InputColumnNames.RECORD_ID,
+                                               ClassificationCategoryAbbreviations.AUTO_SALES],
+                                              InputColumnNames.RECORD_ID)
     assert results == [[100, ThresholdValues.NOT_SEEN]]
 
 
@@ -334,9 +339,9 @@ def test_apply_thresholds_to_scored_df_should_ignore_extra_columns(spark_session
     config_values = [(ConfigurationOptions.FREQUENCY_THRESHOLD, ClassificationCategoryAbbreviations.AUTO_SALES, 3)]
     app_config_df = spark_session.createDataFrame(config_values, config.configuration_schema())
     external_result_df = scoring.apply_thresholds_to_scored_df(scoring_df, app_config_df)
-    results = extract_rows_for_col(external_result_df,
-                                   external_result_df.columns,
-                                   InputColumnNames.RECORD_ID)
+    results = extract_rows_for_col_with_order(external_result_df,
+                                              external_result_df.columns,
+                                              InputColumnNames.RECORD_ID)
     assert sorted(external_result_df.columns) == sorted(['record_id', 'auto_sales', 'has_seen', 'a_number', 'a_string'])
     assert results == [[100, ThresholdValues.NOT_SEEN, False, 3, 'Hello World']]
 
@@ -382,15 +387,6 @@ def scoring_input_schema():
     return StructType(
         [StructField(InputColumnNames.RECORD_ID, LongType(), False),
          StructField(ClassificationSubcategory.CLASSIF_SUBCATEGORY_KEY, StringType(), True)])
-
-
-def extract_rows_for_col(data_frame, col_names, order_by_column):
-    # list comprehension is only way I can think of to make this easy
-    # get Row objects and translate to Dict type
-    rows_as_dicts = [i.asDict() for i in data_frame.select(col_names).orderBy(order_by_column).collect()]
-
-    # from Dict get values in same order as column name COLUMN order
-    return [[row_dict.get(col_name) for col_name in col_names] for row_dict in rows_as_dicts]
 
 
 def all_expected_subcategory_column_names():

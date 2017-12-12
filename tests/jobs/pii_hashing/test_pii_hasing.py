@@ -5,6 +5,7 @@ from jobs.pii_hashing.pii_hashing import get_hash_mapping_schema_location, \
     select_distinct_raw_hash_values_for_phones_emails, populate_all_raw_inputs, lookup_canonical_hashes, \
     transform_lead_values_input_id_column, join_canonical_hash_values_to_phones_emails, PiiInternalColumnNames
 from shared.constants import Environments, IdentifierTypes, InputColumnNames, HashMappingColumnNames
+from tests.helpers import extract_rows_for_col_with_order
 
 # define mark (need followup if need this)
 spark_session_enabled = pytest.mark.usefixtures("spark_session")
@@ -62,7 +63,7 @@ def test_populate_all_raw_inputs_transforms_all_types(spark_session):
         [4, "EEFFFFFF", IdentifierTypes.EMAIL, "CEFFFFFF"],
         [5, "PPAAAAAA", IdentifierTypes.PHONE, "CPAAAAAA"],
         [6, "EEHHHHHH", IdentifierTypes.EMAIL, None]]
-    extracted_row_values = extract_rows_for_col(result_df, expected_col_names, InputColumnNames.RECORD_ID)
+    extracted_row_values = extract_rows_for_col_with_order(result_df, expected_col_names, InputColumnNames.RECORD_ID)
     assert sorted(extracted_row_values) == sorted(expected_rows)
 
 
@@ -102,7 +103,9 @@ def test_lookup_canonical_hashes_returns_only_matching_values(spark_session):
         ["EEGGGGGG", "CEGGGGGG"],
         ["EEFFFFFF", "CEFFFFFF"],
         ["EEHHHHHH", None]]
-    extracted_row_values = extract_rows_for_col(result_df, expected_col_names, PiiInternalColumnNames.RAW_HASH_VALUE)
+    extracted_row_values = extract_rows_for_col_with_order(result_df,
+                                                           expected_col_names,
+                                                           PiiInternalColumnNames.RAW_HASH_VALUE)
     assert sorted(extracted_row_values) == sorted(expected_rows)
 
 
@@ -124,7 +127,7 @@ def test_transform_lead_values_input_id_column_transforms_only_leads(spark_sessi
         [2, "LLBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB", IdentifierTypes.LEADID, "LLBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB"],
         [2, "LLPPPPPP-PPPP-PPPP-PPPP-PPPPPPPPPPPP", IdentifierTypes.LEADID, "LLPPPPPP-PPPP-PPPP-PPPP-PPPPPPPPPPPP"],
         [4, "LLAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA", IdentifierTypes.LEADID, "LLAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA"]]
-    extracted_row_values = extract_rows_for_col(leads_df, expected_col_names, InputColumnNames.RECORD_ID)
+    extracted_row_values = extract_rows_for_col_with_order(leads_df, expected_col_names, InputColumnNames.RECORD_ID)
     assert sorted(extracted_row_values) == sorted(expected_rows)
 
 
@@ -155,7 +158,9 @@ def test_join_canonical_hash_values_to_phones_emails(spark_session):
         [3, "EEFFFFFF", IdentifierTypes.EMAIL, "CEFFFFFF"],
         [4, "EEFFFFFF", IdentifierTypes.EMAIL, "CEFFFFFF"],
         [5, "PPAAAAAA", IdentifierTypes.PHONE, "CPAAAAAA"]]
-    extracted_row_values = extract_rows_for_col(email_phones_df, expected_col_names, InputColumnNames.RECORD_ID)
+    extracted_row_values = extract_rows_for_col_with_order(email_phones_df,
+                                                           expected_col_names,
+                                                           InputColumnNames.RECORD_ID)
     assert sorted(extracted_row_values) == sorted(expected_rows)
 
 
@@ -178,13 +183,3 @@ def hash_mapping_schema():
     return StructType(
         [StructField(HashMappingColumnNames.CANONICAL_HASH_VALUE, StringType(), True),
          StructField(HashMappingColumnNames.HASH_VALUE, StringType(), True)])
-
-
-# TODO: extract this, DRY
-def extract_rows_for_col(data_frame, col_names, order_by_column):
-    # list comprehension is only way I can think of to make this easy
-    # get Row objects and translate to Dict type
-    rows_as_dicts = [i.asDict() for i in data_frame.select(col_names).orderBy(order_by_column).collect()]
-
-    # from Dict get values in same order as column name COLUMN order
-    return [[row_dict.get(col_name) for col_name in col_names] for row_dict in rows_as_dicts]

@@ -1,6 +1,7 @@
-from pyspark.sql.types import StructField, StructType, LongType, StringType
+from pyspark.sql.types import StructField, StructType, LongType, StringType, ShortType, TimestampType
 
-from shared.constants import PiiHashingColumnNames, InputColumnNames, ConsumerViewSchema, LeadEventSchema
+from shared.constants import PiiHashingColumnNames, InputColumnNames, ConsumerViewSchema, LeadEventSchema, \
+    PublisherPermissions
 
 
 def expected_pii_hashing_schema():
@@ -49,3 +50,23 @@ def lead_event_schema():
         [StructField(InputColumnNames.LEAD_ID, StringType()),
          StructField(LeadEventSchema.CREATION_TS, StringType()),
          StructField(LeadEventSchema.CAMPAIGN_KEY, StringType())])
+
+
+def v_campaign_opt_in_state_schema():
+    return StructType(
+        [StructField(PublisherPermissions.CAMPAIGN_KEY, StringType()),
+         StructField(PublisherPermissions.APPLICATION_KEY, LongType()),
+         StructField(PublisherPermissions.OPT_IN_IND, ShortType()),
+         StructField(PublisherPermissions.INSERT_TS, TimestampType()),
+         StructField(PublisherPermissions.INSERT_JOB_RUN_ID, LongType())])
+
+
+def expected_publisher_permissions_result_schema():
+    return StructType(
+        [StructField(InputColumnNames.RECORD_ID, LongType()),
+         StructField(InputColumnNames.INPUT_ID, StringType()),
+         StructField(LeadEventSchema.CREATION_TS, StringType())])
+
+
+def filtered_campaign_opt_in_view():
+    return StructType([StructField(PublisherPermissions.VIEW_CAMPAIGN_KEY, StringType())])

@@ -6,6 +6,7 @@ class Environments:  # pylint:disable=too-few-public-methods
     LOCAL = "local"
     LOCAL_BUCKET_PREFIX = "../samples/"
     AWS_REGION = 'us-east-1'
+    AIDA_INSIGHTS_APP_CODE = 3
 
 
 class InputColumnNames:  # pylint:disable=too-few-public-methods
@@ -157,3 +158,14 @@ class ThresholdValues:  # pylint:disable=too-few-public-methods
     NOT_SEEN = "NOT_SEEN"
     IN_MARKET = "IN_MARKET"
     IN_MARKET_HIGH = "IN_MARKET_H"
+
+
+class PublisherPermissions:  # pylint:disable=too-few-public-methods
+    CAMPAIGN_KEY = "campaign_key"
+    OPT_IN_IND = "opt_in_ind"
+    APPLICATION_KEY = "application_key"
+    INSERT_JOB_RUN_ID = "insert_job_run_id"
+    INSERT_TS = "insert_ts"
+    VIEW_CAMPAIGN_KEY = "view_campaign_key"
+    OPT_IN_VALUE = 1
+    OPT_OUT_VALUE = 0

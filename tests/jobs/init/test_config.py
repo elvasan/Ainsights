@@ -3,6 +3,7 @@ from pyspark.sql.types import StructField, StructType, StringType
 
 from jobs.init import config
 from src.shared.constants import Environments, ConfigurationSchema, ClassificationSubcategory
+from tests.helpers import extract_rows_for_col
 
 CLIENT_NAME = 'beestest'
 
@@ -132,7 +133,3 @@ def classif_subcategory_schema():
     return StructType(
         [StructField(ClassificationSubcategory.CLASSIF_SUBCATEGORY_KEY, StringType()),
          StructField(ClassificationSubcategory.SUBCATEGORY_CD, StringType())])
-
-
-def extract_rows_for_col(data_frame, col_name):
-    return [i[col_name] for i in data_frame.select(col_name).collect()]
