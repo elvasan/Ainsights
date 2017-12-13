@@ -4,13 +4,10 @@ import pytest
 
 from jobs.classification import classify
 from shared.constants import Environments, ClassificationSetElementXref, ClassificationLead
+from tests.helpers import extract_rows_for_col
 from tests.jobs.classification import schema
 
 spark_session_enabled = pytest.mark.usefixtures("spark_session")
-
-
-def extract_rows_for_col(data_frame, col_name):
-    return [i[col_name] for i in data_frame.select(col_name).collect()]
 
 
 def test_get_classification_schema_location_returns_correct_for_dev():

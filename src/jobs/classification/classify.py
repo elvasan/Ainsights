@@ -22,21 +22,13 @@ def classify(spark_session, logger, input_df, environment):
     :return: A DataFrame that contains the leads from the input and their classifications
     """
     lead_df = get_classification_lead_df(spark_session, environment, logger)
-    logger.info("LEAD_DF PARTITION SIZE: {size}".format(size=lead_df.rdd.getNumPartitions()))
-
     classification_set_df = get_classification_set_elem_xref_df(spark_session, environment, logger)
-    logger.info(
-        "CLASSIFICATION_SET_DF PARTITION SIZE: {size}".format(size=classification_set_df.rdd.getNumPartitions()))
 
     # Transform the input DataFrame by joining it to the classif_lead DataFrame
     input_lead_df = join_input_to_lead_df(input_df, lead_df)
-    logger.info("INPUT_LEAD_DF PARTITION SIZE: {size}".format(size=input_lead_df.rdd.getNumPartitions()))
 
     # Transform the input and lead DataFrame by joining it to the classif_set DataFrame
-    classified_leads_df = join_input_to_classification_set_df(input_lead_df, classification_set_df)
-    logger.info("INPUT_LEAD_SET_DF PARTITION SIZE: {size}".format(size=classified_leads_df.rdd.getNumPartitions()))
-
-    return classified_leads_df
+    return join_input_to_classification_set_df(input_lead_df, classification_set_df)
 
 
 def apply_event_lookback_to_classified_leads(classified_leads_df, app_config_df, as_of_time):
