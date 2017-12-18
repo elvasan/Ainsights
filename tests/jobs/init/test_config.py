@@ -91,16 +91,17 @@ def test_merge_client_config_with_app_config_returns_correct_config_when_client_
     override_rows = [("event_lookback", "auto_sales", 88),
                      ("event_lookback", "financial_services", 77),
                      ("frequency_threshold", "auto_sales", 66),
+                     ("industry_results", "auto_sales", "auto_sales"),
                      ("asof", "asof", "2017-11-17 12:00:00.0")]
     client_override_df = spark_session.createDataFrame(override_rows, config.configuration_schema())
 
     result_df = config.merge_client_config_with_app_config(client_override_df, app_default_df)
     expected_columns = [ConfigurationSchema.OPTION, ConfigurationSchema.CONFIG_ABBREV, ConfigurationSchema.VALUE]
     assert sorted(result_df.columns) == sorted(expected_columns)
-    assert result_df.count() == 5
+    assert result_df.count() == 6
 
     extracted_values = extract_rows_for_col(result_df, ConfigurationSchema.VALUE)
-    expected_values = ["88", "77", "66", "7", "2017-11-17 12:00:00.0"]
+    expected_values = ["auto_sales", "88", "77", "66", "7", "2017-11-17 12:00:00.0"]
     assert sorted(expected_values) == sorted(extracted_values)
 
 

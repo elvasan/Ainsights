@@ -137,6 +137,7 @@ class ConfigurationSchema:  # pylint:disable=too-few-public-methods
 class ConfigurationOptions:  # pylint:disable=too-few-public-methods
     EVENT_LOOKBACK = "event_lookback"
     FREQUENCY_THRESHOLD = "frequency_threshold"
+    INDUSTRY_RESULT = "industry_result"
     ASOF = "asof"
 
 

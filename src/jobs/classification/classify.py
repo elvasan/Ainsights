@@ -11,6 +11,23 @@ class TransformationColumns:  # pylint:disable=too-few-public-methods
     LOOKBACK_DATES = "lookback_dates"
 
 
+def restrict_industry_by_config(internal_scored_df, app_config_df):
+    """
+    Removes industry columns which are not present in the configuration file.
+
+    :param internal_scored_df: A DataFrame with internal scored results.
+    :param app_config_df: A DataFrame containing the application configuration
+    :return: A DataFrame with internal scored values with columns restricted to industry config values.
+    """
+    industry_results = app_config_df.filter(app_config_df.option == ConfigurationOptions.INDUSTRY_RESULT) \
+        .select(app_config_df.value)
+
+    industry_list = [result.value for result in industry_results.collect()]
+    industry_list.insert(0, InputColumnNames.RECORD_ID)
+
+    return internal_scored_df.select(*industry_list)
+
+
 def classify(spark_session, logger, input_df, environment):
     """
     Classify the leads that are provided in the input DataFrame.
