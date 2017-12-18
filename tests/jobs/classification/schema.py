@@ -53,7 +53,14 @@ def expected_classification_result_schema():
          StructField(LeadEventSchema.CREATION_TS, StringType())])
 
 
-def expected_configuration_schema():
+def configuration_schema():
+    return StructType(
+        [StructField(ConfigurationSchema.OPTION, StringType()),
+         StructField(ConfigurationSchema.CONFIG_ABBREV, StringType()),
+         StructField(ConfigurationSchema.VALUE, StringType())])
+
+
+def expected_transformed_configuration_schema():
     return StructType(
         [StructField(ConfigurationSchema.OPTION, StringType()),
          StructField(ConfigurationSchema.CONFIG_ABBREV, StringType()),

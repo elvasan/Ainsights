@@ -1,7 +1,7 @@
 import datetime
 
 from jobs.classification.classify import classify, get_classification_subcategory_df, \
-    apply_event_lookback_to_classified_leads
+    apply_event_lookback_to_classified_leads, restrict_industry_by_config
 from jobs.consumer_insights.consumer_insights_processing import retrieve_leads_from_consumer_graph
 from jobs.consumer_insights.publisher_permissions import apply_publisher_permissions_to_lead_campaigns
 from jobs.init.config import get_application_config_df
@@ -70,8 +70,11 @@ def analyze(spark, logger, **job_args):  # pylint:disable=too-many-locals
     logger.info("SCORING START")
     classify_subcategory_df = get_classification_subcategory_df(spark, environment, logger)
     internal_scored_df = score_file(classify_subcategory_df, classification_data_frame)
-    # Once we have the scored data frame, apply the frequency thresholds to get the external customer file
-    external_scored_df = apply_thresholds_to_scored_df(internal_scored_df, app_config_df)
+
+    # Once we have the scored data frame, get the columns the client is expecting
+    # and apply the frequency thresholds to get the external customer file
+    external_columns_df = restrict_industry_by_config(internal_scored_df, app_config_df)
+    external_scored_df = apply_thresholds_to_scored_df(external_columns_df, app_config_df)
 
     # cache final Scores (need the show statements to ensure action is fired)
     internal_scored_df.cache()

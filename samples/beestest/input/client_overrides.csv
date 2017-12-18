@@ -17,4 +17,13 @@ frequency_threshold,jobs,3
 frequency_threshold,legal,3
 frequency_threshold,home_services,2
 frequency_threshold,other,4
+industry_result,auto_sales,auto_sales
+industry_result,education,education
+industry_result,insurance,insurance
+industry_result,financial_services,financial_services
+industry_result,real_estate,real_estate
+industry_result,jobs,jobs
+industry_result,legal,legal
+industry_result,home_services,home_services
+industry_result,other,other
 asof,asof,2017-10-16 12:00:00
