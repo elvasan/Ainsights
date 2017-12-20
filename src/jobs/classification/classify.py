@@ -1,13 +1,10 @@
-from pyspark.sql.types import TimestampType
-
 from jobs.input.input_processing import load_parquet_into_df
 from shared.constants import Environments, ClassificationLead, ClassificationSetElementXref, \
-    ClassificationSubcategory, InputColumnNames, ConfigurationOptions, LeadEventSchema, JoinTypes
+    ClassificationSubcategory, InputColumnNames, ConfigurationOptions, JoinTypes
 
 
 class TransformationColumns:  # pylint:disable=too-few-public-methods
     SUBCATEGORY_KEY = "subcategory_key"
-    CREATED_DATE = "created_date"
     LOOKBACK_DATES = "lookback_dates"
 
 
@@ -54,7 +51,7 @@ def apply_event_lookback_to_classified_leads(classified_leads_df, app_config_df,
     of the event lookback window, we will null out the value to prevent processing when we move to the scoring module.
     :param classified_leads_df: A DataFrame of classified leads containing the record_id and classif_subcategory_key
     :param app_config_df: A DataFrame of app configuration. For this function we filter on event_lookback.
-    :param as_of_time: The time that the application started which is used to calculate the lookback date per industry.
+    :param as_of_time: The time the job should run as of, which is used to calculate the lookback date per industry.
     :return: A DataFrame consisting of the original classifed leads. Any value which falls out of the lookback window
     is nulled out.
     """
@@ -81,16 +78,13 @@ def apply_event_lookback_to_classified_leads(classified_leads_df, app_config_df,
                     .format(as_of_time=as_of_time)) \
         .select(ClassificationSubcategory.CLASSIF_SUBCATEGORY_KEY, TransformationColumns.LOOKBACK_DATES)
 
-    # Cast the created_date column as a DateType so that we can compare the values in the event_lookback DataFrame
-    classif_df = classified_leads_df.withColumn(TransformationColumns.CREATED_DATE,
-                                                classified_leads_df.creation_ts.cast(TimestampType())) \
-        .withColumnRenamed(ClassificationSubcategory.CLASSIF_SUBCATEGORY_KEY,
-                           TransformationColumns.SUBCATEGORY_KEY) \
-        .drop(LeadEventSchema.CREATION_TS)
+    # Rename the subcategory key column here so we dont have conflicts during our comparison
+    classif_df = classified_leads_df.withColumnRenamed(ClassificationSubcategory.CLASSIF_SUBCATEGORY_KEY,
+                                                       TransformationColumns.SUBCATEGORY_KEY)
 
     # Finally join in the two DataFrames based on subcategory key and if the created date is within the lookback window.
     join_expression = [classif_df.subcategory_key == event_lookback_df.classif_subcategory_key,
-                       classif_df.created_date >= event_lookback_df.lookback_dates]
+                       classif_df.creation_ts >= event_lookback_df.lookback_dates]
     return classif_df.join(event_lookback_df, join_expression, JoinTypes.LEFT_JOIN) \
         .select(InputColumnNames.RECORD_ID, ClassificationSubcategory.CLASSIF_SUBCATEGORY_KEY)
 

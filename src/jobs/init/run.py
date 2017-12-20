@@ -4,7 +4,7 @@ from jobs.classification.classify import classify, get_classification_subcategor
     apply_event_lookback_to_classified_leads, restrict_industry_by_config
 from jobs.consumer_insights.consumer_insights_processing import retrieve_leads_from_consumer_graph
 from jobs.consumer_insights.publisher_permissions import apply_publisher_permissions_to_lead_campaigns
-from jobs.init.config import get_application_config_df
+from jobs.init.config import get_application_config_df, get_as_of_timestamp
 from jobs.input.input_processing import process_input_file
 from jobs.output.output_processing import write_output, transform_scoring_columns_for_output
 from jobs.pii_hashing.pii_hashing import transform_raw_inputs
@@ -12,7 +12,7 @@ from jobs.scoring.scoring import score_file, apply_thresholds_to_scored_df
 from shared.constants import OutputFileNames
 
 
-def analyze(spark, logger, **job_args):  # pylint:disable=too-many-locals
+def analyze(spark, logger, **job_args):  # pylint:disable=too-many-locals, too-many-statements
     """
     Takes the spark context launched in main.py and runs the AIDA Insights application. The application will
     take an input file, get the canonical hash values for phones, emails, and devices, retrieve associated
@@ -24,6 +24,8 @@ def analyze(spark, logger, **job_args):  # pylint:disable=too-many-locals
     """
     client_name = job_args["client_name"]
     environment = job_args["environment"]
+
+    # We will most likely take this as an input parameter in the future
     time_stamp = datetime.datetime.utcnow()
 
     logger.info("STARTING UP APPLICATION")
@@ -32,6 +34,7 @@ def analyze(spark, logger, **job_args):  # pylint:disable=too-many-locals
     logger.info("ENVIRONMENT: " + environment)
 
     app_config_df = get_application_config_df(spark, environment, client_name, logger)
+    as_of_timestamp = get_as_of_timestamp(app_config_df, time_stamp)
 
     logger.info("RAW INPUT FILE START")
     raw_input_data_frame = process_input_file(spark, logger, client_name, environment)
@@ -44,7 +47,7 @@ def analyze(spark, logger, **job_args):  # pylint:disable=too-many-locals
     logger.info("PII HASHING END")
 
     logger.info("CONSUMER INSIGHTS START")
-    consumer_insights_df = retrieve_leads_from_consumer_graph(spark, environment, input_data_frame)
+    consumer_insights_df = retrieve_leads_from_consumer_graph(spark, environment, input_data_frame, as_of_timestamp)
     consumer_insights_df.cache()
     consumer_insights_df.show(50, False)
     logger.info("CONSUMER INSIGHTS END")
@@ -57,7 +60,7 @@ def analyze(spark, logger, **job_args):  # pylint:disable=too-many-locals
     raw_classification_data_frame = classify(spark, logger, cis_permissions_applied, environment)
     filtered_classification_df = apply_event_lookback_to_classified_leads(raw_classification_data_frame,
                                                                           app_config_df,
-                                                                          time_stamp)
+                                                                          as_of_timestamp)
 
     # repartition on record_id before we score all values
     logger.info("REPARTITIONING CLASSIFICATION RESULTS")
