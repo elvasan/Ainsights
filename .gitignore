@@ -1,9 +1,7 @@
 src/libs
 dist
-lambda-dist
 build
 tmp
-.DS_Store
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -72,10 +70,9 @@ target/
 .idea
 .venv
 aida-insights.iml
-metastore_db/
+/metastore_db/
 
 # Program output
-logs
 /output/
 /spark-warehouse/
 samples/beestest/output/*
