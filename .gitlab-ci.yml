@@ -5,7 +5,6 @@ stages:
   - unit
   - package
   - deploy
-  - deploy-lambda
 
 lint:
   before_script:
@@ -59,7 +58,7 @@ dev_deploy:
 qa_deploy:
   <<: *deploy_template
   script:
-    - aws s3 sync dist s3://jornaya-qa-us-east-1-aida-insights/pyspark/ --grants=full=id=ed6bc4ec2b267e5aff72d4f8e62f9c9e9f656cd8659a8a8d3047cb8e40d3f398 --delete
+    - aws s3 sync dist s3://jornaya-qa-us-east-1-aida-insights/pyspark/ --grants=full=id=05f2ef49af03cacb38e69ed08088c8c539de9d897ededd8a75815571b3acab10 --delete
 staging_deploy:
   only:
     - master
@@ -73,12 +72,3 @@ prod_deploy:
   script:
     - aws s3 sync dist s3://jornaya-prod-us-east-1-aida-insights/pyspark/ --grants=full=id=05f2ef49af03cacb38e69ed08088c8c539de9d897ededd8a75815571b3acab10 --delete
 
-dev_deploy_lambda:
-  stage: deploy-lambda
-  when: manual
-  before_script:
-  - apk add --update make zip
-  - make build
-  - pip install awscli
-  script:
-  - aws s3 sync lambda-dist s3://jornaya-dev-us-east-1-aida-insights/lambda/ --grants=full=id=05f2ef49af03cacb38e69ed08088c8c539de9d897ededd8a75815571b3acab10 --size-only

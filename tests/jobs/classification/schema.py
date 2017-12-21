@@ -1,12 +1,12 @@
-from pyspark.sql.types import StructField, StructType, LongType, StringType, IntegerType
+from pyspark.sql.types import StructField, StructType, LongType, StringType, BooleanType, IntegerType
 
-from shared.constants import ClassificationLead, ClassificationSetElementXref, ClassificationSubcategory, \
-    InputColumnNames, ConfigurationSchema, LeadEventSchema
+from shared.utilities import ClassificationLead, ClassificationSetElementXref, ClassificationSubcategory, \
+    InputColumnNames
 
 
 def classification_lead_schema():
     return StructType(
-        [StructField(ClassificationLead.LEAD_ID, StringType()),
+        [StructField(ClassificationLead.TOKEN, StringType()),
          StructField(ClassificationLead.CLASSIF_SET_KEY, StringType())])
 
 
@@ -35,40 +35,21 @@ def expected_input_schema():
     return StructType(
         [StructField(InputColumnNames.RECORD_ID, LongType()),
          StructField(InputColumnNames.INPUT_ID, StringType()),
-         StructField(LeadEventSchema.CREATION_TS, StringType())])
+         StructField(InputColumnNames.INPUT_ID_TYPE, StringType()),
+         StructField(InputColumnNames.AS_OF_TIME, StringType()),
+         StructField(InputColumnNames.HAS_ERROR, BooleanType()),
+         StructField(InputColumnNames.ERROR_MESSAGE, StringType())])
 
 
 def expected_input_lead_transformed_schema():
     return StructType(
         [StructField(InputColumnNames.RECORD_ID, LongType()),
          StructField(InputColumnNames.INPUT_ID, StringType()),
-         StructField(ClassificationLead.CLASSIF_SET_KEY, StringType()),
-         StructField(LeadEventSchema.CREATION_TS, StringType())])
+         StructField(ClassificationLead.CLASSIF_SET_KEY, StringType())])
 
 
 def expected_classification_result_schema():
     return StructType(
         [StructField(InputColumnNames.RECORD_ID, LongType()),
-         StructField(ClassificationSetElementXref.CLASSIF_SUBCATEGORY_KEY, StringType()),
-         StructField(LeadEventSchema.CREATION_TS, StringType())])
-
-
-def configuration_schema():
-    return StructType(
-        [StructField(ConfigurationSchema.OPTION, StringType()),
-         StructField(ConfigurationSchema.CONFIG_ABBREV, StringType()),
-         StructField(ConfigurationSchema.VALUE, StringType())])
-
-
-def expected_transformed_configuration_schema():
-    return StructType(
-        [StructField(ConfigurationSchema.OPTION, StringType()),
-         StructField(ConfigurationSchema.CONFIG_ABBREV, StringType()),
-         StructField(ConfigurationSchema.VALUE, StringType()),
-         StructField(ClassificationSubcategory.CLASSIF_SUBCATEGORY_KEY, StringType())])
-
-
-def expected_classif_lookback_result_schema():
-    return StructType(
-        [StructField(InputColumnNames.RECORD_ID, LongType()),
-         StructField(ClassificationLead.CLASSIF_SUBCATEGORY_KEY, StringType())])
+         StructField(ClassificationSetElementXref.CLASSIF_SUBCATEGORY_KEY, StringType())
+         ])
