@@ -1,17 +1,21 @@
-from pyspark.sql.functions import col
+from pyspark.sql.functions import col, lit, when
+from pyspark.sql.types import TimestampType
 
 from jobs.input.input_processing import load_parquet_into_df
 from shared.constants import Environments, ConsumerViewSchema, PiiHashingColumnNames, IdentifierTypes, \
-    LeadEventSchema, JoinTypes
+    LeadEventSchema, JoinTypes, InputColumnNames
 
 
-def retrieve_leads_from_consumer_graph(spark, environment, pii_hashing_df):
+def retrieve_leads_from_consumer_graph(spark, environment, pii_hashing_df, as_of_datetime):
     """
-    Retrieves all of the leads that are associated with a record id.
+    Retrieves all of the leads that are associated with a record id in addition to the associated campaign key,
+    and created timestamp.
+
     :param spark: The spark session
     :param environment: The current development environment (local, dev, qa, etc...)
     :param pii_hashing_df: The DataFrame received from the pii hashing module
-    :return: A DataFrame consisting of a record id and associated input ids
+    :param as_of_datetime: The date as of which the file is being processed
+    :return: A DataFrame consisting of rows of record ids, leadids, created timestamps, and campaign keys
     """
     consumer_view_schema_location = build_consumer_view_schema_location(environment)
     consumer_view_df = get_consumer_view_df(spark, consumer_view_schema_location)
@@ -22,15 +26,38 @@ def retrieve_leads_from_consumer_graph(spark, environment, pii_hashing_df):
     lead_event_location = build_lead_event_schema_location(environment)
     lead_event_df = get_lead_event_df(spark, lead_event_location)
 
-    return join_lead_ids_to_lead_event(lead_id_df, lead_event_df)
+    view_df = join_lead_ids_to_lead_event(lead_id_df, lead_event_df)
+
+    return apply_as_of_date_to_consumer_view_results(view_df, as_of_datetime)
+
+
+def apply_as_of_date_to_consumer_view_results(consumer_view, as_of_datetime):
+    """
+    Takes an 'as of' date and filters (nulls out) leads which where created after the as of date.
+
+    created_ts = '2017-11-10 12:00:00'
+    as_of_time = '2017-11-05 12:00:00'
+    Since created_ts > as_of_time, then input_id = null
+    :param consumer_view: A DataFrame representing the consumer view
+    :param as_of_datetime: The date as of which the file is being processed
+    :return: A DataFrame with as_of dates applied
+    """
+    as_of_view = consumer_view.withColumn(InputColumnNames.AS_OF_TIME, lit(as_of_datetime)) \
+        .withColumn(LeadEventSchema.CREATION_TS, consumer_view.creation_ts.cast(TimestampType()))
+
+    return as_of_view.withColumn(InputColumnNames.INPUT_ID,
+                                 when(as_of_view[LeadEventSchema.CREATION_TS] > as_of_view[InputColumnNames.AS_OF_TIME],
+                                      None)
+                                 .otherwise(as_of_view[InputColumnNames.INPUT_ID])) \
+        .drop(InputColumnNames.AS_OF_TIME)
 
 
 def join_lead_ids_to_lead_event(lead_id_df, lead_event_df):
     """
     Joins the record_id and lead_id DataFrame with the lead_id and creation_ts DataFrame
     :param lead_id_df: A DataFrame consisting of record_id and lead_id
-    :param lead_event_df: A DataFrame consisting of lead_id and creation_ts
-    :return: A DataFrame consisting of record_id, lead_id, and creation_ts
+    :param lead_event_df: A DataFrame consisting of lead_id, creation_ts, and campaign_key
+    :return: A DataFrame consisting of record_id, lead_id, creation_ts, and campaign_key
     """
     return lead_id_df.join(lead_event_df, lead_id_df.input_id == lead_event_df.lead_id, JoinTypes.LEFT_JOIN) \
         .select(PiiHashingColumnNames.RECORD_ID, PiiHashingColumnNames.INPUT_ID, LeadEventSchema.CREATION_TS,

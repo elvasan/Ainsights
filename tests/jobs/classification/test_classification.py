@@ -3,6 +3,7 @@ import datetime
 import pytest
 
 from jobs.classification import classify
+from jobs.init import config
 from shared.constants import Environments, ClassificationSetElementXref, ClassificationLead, ConfigurationOptions
 from tests.helpers import extract_rows_for_col
 from tests.jobs.classification import schema
@@ -157,7 +158,7 @@ def test_restrict_industry_by_config_returns_only_record_id_when_no_industry_val
     config_data = [(ConfigurationOptions.EVENT_LOOKBACK, "auto_sales", "10"),
                    (ConfigurationOptions.FREQUENCY_THRESHOLD, "auto_sales", "3"),
                    (ConfigurationOptions.ASOF, "asof", "10")]
-    app_config_df = spark_session.createDataFrame(config_data, schema.configuration_schema())
+    app_config_df = spark_session.createDataFrame(config_data, config.configuration_schema())
 
     scored_values = [(100, 0, 1, 4, 4, 0, 0, 5, 2, 0),
                      (101, 0, 1, 4, 4, 0, 0, 5, 2, 0)]
@@ -179,7 +180,7 @@ def test_restrict_industry_by_config_returns_all_columns_when_all_are_present_in
                    (ConfigurationOptions.INDUSTRY_RESULT, "legal", "legal"),
                    (ConfigurationOptions.INDUSTRY_RESULT, "home_services", "home_services"),
                    (ConfigurationOptions.INDUSTRY_RESULT, "other", "other")]
-    app_config_df = spark_session.createDataFrame(config_data, schema.configuration_schema())
+    app_config_df = spark_session.createDataFrame(config_data, config.configuration_schema())
 
     scored_values = [(100, 0, 1, 4, 4, 0, 0, 5, 2, 0),
                      (101, 0, 1, 4, 4, 0, 0, 5, 2, 0)]
@@ -196,7 +197,7 @@ def test_restrict_industry_by_config_returns_only_columns_present_in_config(spar
                    (ConfigurationOptions.INDUSTRY_RESULT, "financial_services", "financial_services"),
                    (ConfigurationOptions.INDUSTRY_RESULT, "real_estate", "real_estate"),
                    (ConfigurationOptions.INDUSTRY_RESULT, "home_services", "home_services")]
-    app_config_df = spark_session.createDataFrame(config_data, schema.configuration_schema())
+    app_config_df = spark_session.createDataFrame(config_data, config.configuration_schema())
 
     scored_values = [(100, 0, 1, 4, 4, 0, 0, 5, 2, 0),
                      (101, 0, 1, 4, 4, 0, 0, 5, 2, 0)]

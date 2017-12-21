@@ -1,8 +1,29 @@
+from datetime import datetime
+
 from pyspark.sql.types import StructType, StructField, StringType
 
 from jobs.classification.classify import get_classification_subcategory_df
 from jobs.input.input_processing import load_csv_file
-from shared.constants import Environments, ConfigurationSchema, ClassificationSubcategory, JoinTypes
+from shared.constants import Environments, ConfigurationSchema, ClassificationSubcategory, JoinTypes, \
+    ConfigurationOptions
+
+
+def get_as_of_timestamp(app_config_df, default_timestamp):
+    """
+    Returns the as_of timestamp from the application configuration if defined, otherwise we return a default timestamp
+    which is created at the application startup.
+
+    For example a string value of 10/16/17 12:00 will be returned as 2017-10-16 12:00:00 cast as datetime.
+    :param app_config_df: The application configuration DataFrame
+    :param default_timestamp: The default timestamp, created when the app initialized, to return if the config is null.
+    :return: a datetime object
+    """
+    as_of_row = app_config_df.filter(app_config_df.option == ConfigurationOptions.ASOF) \
+        .select(app_config_df.value) \
+        .first()
+    if as_of_row is None:
+        return default_timestamp
+    return datetime.strptime(as_of_row.value, '%m/%d/%y %H:%M')
 
 
 def get_application_defaults_location(environment):

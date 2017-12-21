@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 
 from src.jobs.consumer_insights import consumer_insights_processing as cis
@@ -210,3 +212,32 @@ def test_join_lead_ids_to_lead_event_returns_expected_values(spark_session):
                                                        schema.expected_consumer_insights_result_schema())
 
     assert 0 == result_df.subtract(expected_result_df).count()
+
+
+def test_apply_as_of_date_to_consumer_view_results_with_current_date_returns_all_leads(spark_session):
+    consumer_view_data = [(1, 'LLAAA', '2017-01-11 22:28:34.000', 'CKAAA'),
+                          (2, 'LLBBB', '2017-02-11 22:28:34.000', 'CKBBB'),
+                          (3, 'LLCCC', '2017-03-11 22:28:34.000', 'CKCCC')]
+    consumer_view_df = spark_session.createDataFrame(consumer_view_data,
+                                                     schema.expected_consumer_insights_result_schema())
+
+    now = datetime.utcnow()
+    result_df = cis.apply_as_of_date_to_consumer_view_results(consumer_view_df, now)
+    row = extract_rows_for_col(result_df, PiiHashingColumnNames.INPUT_ID)
+
+    assert sorted(row) == ['LLAAA', 'LLBBB', 'LLCCC']
+
+
+def test_apply_as_of_date_to_consumer_view_results_with_date_in_past_returns_only_expected_leads(spark_session):
+    consumer_view_data = [(1, 'LLAAA', '2017-01-11 22:28:34.000', 'CKAAA'),
+                          (2, 'LLBBB', '2017-02-11 12:00:00.000', 'CKBBB'),
+                          (3, 'LLCCC', '2017-03-11 22:28:34.000', 'CKCCC')]
+    consumer_view_df = spark_session.createDataFrame(consumer_view_data,
+                                                     schema.expected_consumer_insights_result_schema())
+
+    past_date = datetime.strptime('02/11/17 12:00', '%m/%d/%y %H:%M')
+    result_df = cis.apply_as_of_date_to_consumer_view_results(consumer_view_df, past_date)
+
+    row = extract_rows_for_col(result_df, PiiHashingColumnNames.INPUT_ID)
+
+    assert row == ['LLAAA', 'LLBBB', None]

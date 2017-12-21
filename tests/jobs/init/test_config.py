@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 from pyspark.sql.types import StructField, StructType, StringType
 
@@ -128,6 +130,43 @@ def test_get_subcategory_key_for_config_abbreviation(spark_session):
 
     for i in extracted_keys:
         assert i in expected_keys
+
+
+def test_get_as_of_timestamp_returns_current_utc_datetime_when_no_config_value_present(spark_session):
+    config_rows = [("event_lookback", "auto_sales", 30),
+                   ("frequency_threshold", "auto_sales", 4),
+                   ("industry_result", "auto_sales", "auto_sales")]
+    config_df = spark_session.createDataFrame(config_rows, config.configuration_schema())
+
+    now = datetime.utcnow()
+    result = config.get_as_of_timestamp(config_df, now)
+
+    assert isinstance(result, datetime)
+    assert result == now
+
+
+def test_get_as_of_timestamp_returns_spark_readable_datetime(spark_session):
+    config_row = [("asof", "asof", "10/16/17 12:00")]
+    config_df = spark_session.createDataFrame(config_row, config.configuration_schema())
+
+    now = datetime.utcnow()
+    result = config.get_as_of_timestamp(config_df, now)
+
+    assert result != now
+    assert isinstance(result, datetime)
+    assert str(result) == "2017-10-16 12:00:00"
+
+
+def test_get_as_of_timestamp_returns_expected_datetime(spark_session):
+    config_row = [("asof", "asof", "1/2/17 8:00")]
+    config_df = spark_session.createDataFrame(config_row, config.configuration_schema())
+
+    now = datetime.utcnow()
+    result = config.get_as_of_timestamp(config_df, now)
+
+    assert result != now
+    assert isinstance(result, datetime)
+    assert str(result) == "2017-01-02 08:00:00"
 
 
 def classif_subcategory_schema():
