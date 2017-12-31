@@ -5,7 +5,15 @@ from pyspark.sql.types import StructType, StructField, StringType
 from jobs.classification.classify import get_classification_subcategory_df
 from jobs.input.input_processing import load_csv_file
 from shared.constants import Environments, ConfigurationSchema, ClassificationSubcategory, JoinTypes, \
-    ConfigurationOptions
+    ConfigurationOptions, Schemas
+
+
+def get_schema_location_dict(app_config_df):
+    schemas = app_config_df.filter(app_config_df.option == ConfigurationOptions.SCHEMA_LOCATION) \
+        .select(app_config_df.config_abbrev, app_config_df.value)
+
+    schema_list = [[i.config_abbrev, i.value] for i in schemas.collect()]
+    return dict(schema_list)
 
 
 def get_as_of_timestamp(app_config_df, default_timestamp):
@@ -44,7 +52,7 @@ def get_application_defaults_location(environment):
         bucket_prefix = Environments.LOCAL_BUCKET_PREFIX
     else:
         bucket_prefix = 's3://jornaya-{0}-{1}-aida-insights/'.format(environment, Environments.AWS_REGION)
-    return bucket_prefix + 'pyspark/config/application_defaults.csv'
+    return bucket_prefix + "pyspark/config/{}/application_defaults.csv".format(environment)
 
 
 def get_client_overrides_location(environment, client_name):
@@ -135,8 +143,11 @@ def get_application_config_df(spark, environment, client_name, logger):
 
     configuration_df = merge_client_config_with_app_config(client_overrides_df, application_defaults_df)
 
+    # TODO: Fix this
+    schema_locations = get_schema_location_dict(configuration_df)
+
     # Get the subcategories dataframe so that we can get the id value of the config abbreviation
-    classif_subcategory_df = get_classification_subcategory_df(spark, environment, logger) \
+    classif_subcategory_df = get_classification_subcategory_df(spark, schema_locations[Schemas.CLASSIF_SUBCATEGORY]) \
         .drop(ClassificationSubcategory.SUBCATEGORY_DISPLAY_NM)
 
     return get_subcategory_key_for_config_abbreviation(configuration_df, classif_subcategory_df)

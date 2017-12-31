@@ -17,3 +17,10 @@ frequency_threshold,jobs,4
 frequency_threshold,legal,4
 frequency_threshold,home_services,4
 frequency_threshold,other,4
+schema_location,hash_mapping,../samples/hash_mapping
+schema_location,classif_subcategory,../samples/classification/classif_subcategory
+schema_location,classif_set_elem_xref,../samples/classification/classif_set_element_xref
+schema_location,classif_lead,../samples/classification/classif_lead
+schema_location,consumer_view,../samples/cis/consumer_view
+schema_location,lead_event,../samples/cis/lead_event
+schema_location,publisher_permissions,../samples/publisher_permissions/v_campaign_opt_in_state

@@ -32,7 +32,7 @@ build: clean
 	mkdir -p ./dist/config
 	mkdir lambda-dist
 	cp ./src/main.py ./dist
-	cp ./samples/pyspark/config/application_defaults.csv ./dist/config/application_defaults.csv
+	cp -r ./samples/pyspark/config/ ./dist/config/
 	cp ./emr-deploy/emr-config.json ./dist/config/emr-config.json
 	cp ./emr-deploy/emr-instance-groups.json ./dist/config/emr-instance-groups.json
 	cp ./emr-deploy/emr-instance-groups-boto.json ./dist/config/emr-instance-groups-boto.json

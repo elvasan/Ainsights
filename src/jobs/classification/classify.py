@@ -1,6 +1,6 @@
 from jobs.input.input_processing import load_parquet_into_df
-from shared.constants import Environments, ClassificationLead, ClassificationSetElementXref, \
-    ClassificationSubcategory, InputColumnNames, ConfigurationOptions, JoinTypes
+from shared.constants import ClassificationLead, ClassificationSubcategory, InputColumnNames, ConfigurationOptions, \
+    JoinTypes, Schemas
 
 
 class TransformationColumns:  # pylint:disable=too-few-public-methods
@@ -25,18 +25,20 @@ def restrict_industry_by_config(internal_scored_df, app_config_df):
     return internal_scored_df.select(*industry_list)
 
 
-def classify(spark_session, logger, input_df, environment):
+def classify(spark_session, input_df, schema_locations):
     """
     Classify the leads that are provided in the input DataFrame.
 
     :param spark_session: Spark session created from our main file.
-    :param logger: The underlying spark log4j logger
     :param input_df: A DataFrame consisting of leads that need to be classified
-    :param environment: The current environment (local, dev, qa, prod)
+    :param schema_locations: A dict of classification schema locations
     :return: A DataFrame that contains the leads from the input and their classifications
     """
-    lead_df = get_classification_lead_df(spark_session, environment, logger)
-    classification_set_df = get_classification_set_elem_xref_df(spark_session, environment, logger)
+    lead_df = load_parquet_into_df(spark_session, schema_locations[Schemas.CLASSIF_LEAD])
+    lead_df.show()
+    classification_set_df = get_classification_set_elem_xref_df(spark_session,
+                                                                schema_locations[Schemas.CLASSIF_SET_ELEM_XREF])
+    classification_set_df.show()
 
     # Transform the input DataFrame by joining it to the classif_lead DataFrame
     input_lead_df = join_input_to_lead_df(input_df, lead_df)
@@ -118,59 +120,26 @@ def join_input_to_classification_set_df(input_df, classification_set_df):
         .drop(ClassificationLead.CLASSIF_SET_KEY)
 
 
-def get_classification_lead_df(spark_session, environment, logger):
-    """
-    Returns a DataFrame consisting of the classification leads table.
-    :param spark_session: Spark session created from our main file.
-    :param environment: The current environment (local, dev, qa, prod)
-    :return: The Classification Lead table as a DataFrame
-    """
-    schema_location = get_classification_schema_location(environment, ClassificationLead.SCHEMA_NAME)
-    logger.info("Reading classif_lead file from {location}".format(location=schema_location))
-    return load_parquet_into_df(spark_session, schema_location)
-
-
-def get_classification_set_elem_xref_df(spark_session, environment, logger):
+def get_classification_set_elem_xref_df(spark_session, schema_location):
     """
     Returns a DataFrame consisting of the classification set_element_xref table.
     :param spark_session: Spark session created from our main file.
-    :param environment: The current environment (local, dev, qa, prod)
-    :param logger: The application logger
+    :param schema_location: The location of the classif_set_elem_xref table
     :return: The Classification Set Element XREF table as a DataFrame
     """
-    schema_location = get_classification_schema_location(environment, ClassificationSetElementXref.SCHEMA_NAME)
-    logger.info("Reading classif_set_element_xref file from {location}".format(location=schema_location))
     classification_set_elem_xref_df = load_parquet_into_df(spark_session, schema_location)
     return classification_set_elem_xref_df.select(classification_set_elem_xref_df.classif_set_key,
                                                   classification_set_elem_xref_df.classif_subcategory_key)
 
 
-def get_classification_subcategory_df(spark_session, environment, logger):
+def get_classification_subcategory_df(spark_session, schema_location):
     """
     Returns a DataFrame consisting of the classification subcategory table.
     :param spark_session: Spark session created from our main file.
-    :param environment: The current environment (local, dev, qa, prod)
-    :param logger: The application logger
+    :param schema_location: The location of the classif_subcategory table
     :return: The Classification Subcategory table as a DataFrame
     """
-    schema_location = get_classification_schema_location(environment, ClassificationSubcategory.SCHEMA_NAME)
-    logger.info("Reading classif_subcategory file from {location}".format(location=schema_location))
     classif_subcategory_df = load_parquet_into_df(spark_session, schema_location)
     return classif_subcategory_df.select(classif_subcategory_df.classif_subcategory_key,
                                          classif_subcategory_df.subcategory_cd,
                                          classif_subcategory_df.subcategory_display_nm)
-
-
-def get_classification_schema_location(environment, schema_name):
-    """
-    Builds an absolute path to a file for classifications
-
-    :param environment: The current environment (local, dev, qa, prod)
-    :param schema_name: The name of the table being retrieved
-    :return: A string for locating classification parquet files.
-    """
-    if environment == Environments.LOCAL:
-        bucket_prefix = Environments.LOCAL_BUCKET_PREFIX
-    else:
-        bucket_prefix = 's3://jornaya-{0}-{1}-prj/'.format(environment, Environments.AWS_REGION)
-    return bucket_prefix + 'classification/' + schema_name + '/'
