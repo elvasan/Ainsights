@@ -11,7 +11,8 @@ from shared.constants import Environments, ConfigurationSchema, ClassificationSu
 def get_as_of_timestamp(app_config_df, default_timestamp):
     """
     Returns the as_of timestamp from the application configuration if defined, otherwise we return a default timestamp
-    which is created at the application startup.
+    which is created at the application startup. Accepts two and four digit years. Timestamp should be in the format
+    `month/day/year hour:minute`
 
     For example a string value of 10/16/17 12:00 will be returned as 2017-10-16 12:00:00 cast as datetime.
     :param app_config_df: The application configuration DataFrame
@@ -23,7 +24,13 @@ def get_as_of_timestamp(app_config_df, default_timestamp):
         .first()
     if as_of_row is None:
         return default_timestamp
-    return datetime.strptime(as_of_row.value, '%m/%d/%y %H:%M')
+    try:
+        return datetime.strptime(as_of_row.value, '%m/%d/%y %H:%M')
+    except ValueError:
+        try:
+            return datetime.strptime(as_of_row.value, '%m/%d/%Y %H:%M')
+        except ValueError:
+            raise
 
 
 def get_application_defaults_location(environment):
