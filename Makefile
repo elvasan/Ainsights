@@ -41,4 +41,5 @@ build: clean
 	zip -j ./lambda-dist/aida_insights_lambda_update_code.zip ./lambda/aida_insights_lambda_update_code/lambda_function.py
 	zip -j ./lambda-dist/aida_insights_launch_emr_cluster.zip ./lambda/aida_insights_launch_emr_cluster/lambda_function.py
 	zip -j ./lambda-dist/aida_insights_start_sfn.zip ./lambda/aida_insights_start_sfn/lambda_function.py
+	zip -j ./lambda-dist/aida_insights_move_input_file.zip ./lambda/aida_insights_move_input_file/aida_insights_move_input_file.py
 	cd ./src && zip -x main.py -r ../dist/jobs.zip .
