@@ -2,28 +2,28 @@ from pyspark.sql.functions import col, lit, when
 from pyspark.sql.types import TimestampType
 
 from jobs.input.input_processing import load_parquet_into_df
-from shared.constants import Environments, ConsumerViewSchema, PiiHashingColumnNames, IdentifierTypes, \
-    LeadEventSchema, JoinTypes, InputColumnNames
+from shared.constants import ConsumerViewSchema, PiiHashingColumnNames, IdentifierTypes, \
+    LeadEventSchema, JoinTypes, InputColumnNames, Schemas
 
 
-def retrieve_leads_from_consumer_graph(spark, environment, pii_hashing_df, as_of_datetime):
+def retrieve_leads_from_consumer_graph(spark, schema_locations, pii_hashing_df, as_of_datetime):
     """
     Retrieves all of the leads that are associated with a record id in addition to the associated campaign key,
     and created timestamp.
 
     :param spark: The spark session
-    :param environment: The current development environment (local, dev, qa, etc...)
+    :param schema_locations: A dictionary containing the location for consumer view and lead event
     :param pii_hashing_df: The DataFrame received from the pii hashing module
     :param as_of_datetime: The date as of which the file is being processed
     :return: A DataFrame consisting of rows of record ids, leadids, created timestamps, and campaign keys
     """
-    consumer_view_schema_location = build_consumer_view_schema_location(environment)
+    consumer_view_schema_location = schema_locations[Schemas.CONSUMER_VIEW]
     consumer_view_df = get_consumer_view_df(spark, consumer_view_schema_location)
 
     cluster_id_df = join_pii_hashing_to_consumer_view_df(pii_hashing_df, consumer_view_df)
     lead_id_df = get_leads_from_cluster_id_df(consumer_view_df, cluster_id_df)
 
-    lead_event_location = build_lead_event_schema_location(environment)
+    lead_event_location = schema_locations[Schemas.LEAD_EVENT]
     lead_event_df = get_lead_event_df(spark, lead_event_location)
 
     view_df = join_lead_ids_to_lead_event(lead_id_df, lead_event_df)
@@ -127,35 +127,3 @@ def get_lead_event_df(spark, schema_location):
     lead_event_df = load_parquet_into_df(spark, schema_location)
     return lead_event_df.select(LeadEventSchema.LEAD_ID, LeadEventSchema.CAMPAIGN_KEY, LeadEventSchema.SERVER_GMT_TS) \
         .withColumnRenamed(LeadEventSchema.SERVER_GMT_TS, LeadEventSchema.CREATION_TS)
-
-
-def build_consumer_view_schema_location(environment):
-    """
-    Builds an absolute path to the consumer insights schema
-
-    :param environment: The current environment (local, dev, qa, prod)
-    :return: A string for locating consumer insights parquet files.
-    """
-    if environment == Environments.LOCAL:
-        bucket_prefix = Environments.LOCAL_BUCKET_PREFIX
-    else:
-        bucket_prefix = 's3://jornaya-{0}-{1}-prj/'.format(environment, Environments.AWS_REGION)
-
-    # Temp workaround in DEV for CI Team to use alternate view
-    if environment == Environments.DEV:
-        return bucket_prefix + 'cis/consumer_view_papaya'
-    return bucket_prefix + 'cis/consumer_view'
-
-
-def build_lead_event_schema_location(environment):
-    """
-    Builds an absolute path to the lead event schema
-
-    :param environment: The current environment (local, dev, qa, prod)
-    :return: A string for locating lead event parquet files.
-    """
-    if environment == Environments.LOCAL:
-        bucket_prefix = Environments.LOCAL_BUCKET_PREFIX
-    else:
-        bucket_prefix = 's3://jornaya-{0}-{1}-prj/'.format(environment, Environments.AWS_REGION)
-    return bucket_prefix + 'cis/lead_event'

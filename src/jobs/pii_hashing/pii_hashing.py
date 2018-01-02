@@ -1,5 +1,5 @@
 from jobs.input.input_processing import load_parquet_into_df
-from shared.constants import InputColumnNames, Environments, IdentifierTypes, HashMappingColumnNames, JoinTypes
+from shared.constants import InputColumnNames, IdentifierTypes, HashMappingColumnNames, JoinTypes
 
 MD5_VALUE_CODE = '2'
 SHA256_VALUE_CODE = '5'
@@ -10,9 +10,9 @@ class PiiInternalColumnNames:  # pylint:disable=too-few-public-methods
     RAW_HASH_VALUE = "raw_hash_value"
 
 
-def transform_raw_inputs(spark, logger, input_df, environment):
+def transform_raw_inputs(spark, input_df, schema_location):
     # get hash mapping dataframe
-    hash_mapping_df = get_hash_mapping_df(spark, environment, logger)
+    hash_mapping_df = get_hash_mapping_df(spark, schema_location)
     return populate_all_raw_inputs(input_df, hash_mapping_df)
 
 
@@ -95,32 +95,15 @@ def select_distinct_raw_hash_values_for_phones_emails(input_df):
         .distinct()
 
 
-def get_hash_mapping_df(spark_session, environment, logger):
+def get_hash_mapping_df(spark_session, schema_location):
     """
     Retrieves the hash mapping tables as a DataFrame consisting of two columns: canonical hash value and raw input value
     :param spark_session: The Spark Session
-    :param environment: The current environment (local, dev, qa, prod)
-    :param logger: The application logger
+    :param schema_location: The location of the hash mapping schema
     :return: A DataFrame with two columns, canonical hash value and raw input value
     """
-    schema_location = get_hash_mapping_schema_location(environment)
-    logger.info("Reading hash_mapping file from {location}".format(location=schema_location))
     hash_map_df = load_parquet_into_df(spark_session, schema_location)
     # select out only the canonical_hash_value and hash_value columns that are lower md5 or lower sha256
     return hash_map_df \
         .filter(hash_map_df.hash_type_cd.isin([MD5_VALUE_CODE, SHA256_VALUE_CODE])) \
         .select(hash_map_df.canonical_hash_value, hash_map_df.hash_value)
-
-
-def get_hash_mapping_schema_location(environment):
-    """
-    Builds an absolute path to the hash mapping schema`
-
-    :param environment: The current environment (local, dev, qa, prod)
-    :return: A string for locating hash mapping parquet files.
-    """
-    if environment == Environments.LOCAL:
-        bucket_prefix = Environments.LOCAL_BUCKET_PREFIX
-    else:
-        bucket_prefix = 's3://jornaya-{0}-{1}-fdl/'.format(environment, Environments.AWS_REGION)
-    return bucket_prefix + 'hash_mapping'

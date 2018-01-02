@@ -4,7 +4,8 @@ import pytest
 from pyspark.sql.types import StructField, StructType, StringType
 
 from jobs.init import config
-from src.shared.constants import Environments, ConfigurationSchema, ClassificationSubcategory
+from src.shared.constants import Environments, ConfigurationSchema, ClassificationSubcategory, Schemas, \
+    ConfigurationOptions
 from tests.helpers import extract_rows_for_col
 
 CLIENT_NAME = 'beestest'
@@ -15,27 +16,27 @@ spark_session_enabled = pytest.mark.usefixtures("spark_session")
 
 def test_get_application_defaults_location_returns_correct_local_schema():
     result = config.get_application_defaults_location(Environments.LOCAL)
-    assert '../samples/pyspark/config/application_defaults.csv' == result
+    assert '../samples/pyspark/config/local/application_defaults.csv' == result
 
 
 def test_get_application_defaults_location_returns_correct_dev_schema():
     result = config.get_application_defaults_location(Environments.DEV)
-    assert 's3://jornaya-dev-us-east-1-aida-insights/pyspark/config/application_defaults.csv' == result
+    assert 's3://jornaya-dev-us-east-1-aida-insights/pyspark/config/dev/application_defaults.csv' == result
 
 
 def test_get_application_defaults_location_returns_correct_qa_schema():
     result = config.get_application_defaults_location(Environments.QA)
-    assert 's3://jornaya-qa-us-east-1-aida-insights/pyspark/config/application_defaults.csv' == result
+    assert 's3://jornaya-qa-us-east-1-aida-insights/pyspark/config/qa/application_defaults.csv' == result
 
 
 def test_get_application_defaults_location_returns_correct_staging_schema():
     result = config.get_application_defaults_location(Environments.STAGING)
-    assert 's3://jornaya-staging-us-east-1-aida-insights/pyspark/config/application_defaults.csv' == result
+    assert 's3://jornaya-staging-us-east-1-aida-insights/pyspark/config/staging/application_defaults.csv' == result
 
 
 def test_get_application_defaults_location_returns_correct_prod_schema():
     result = config.get_application_defaults_location(Environments.PROD)
-    assert 's3://jornaya-prod-us-east-1-aida-insights/pyspark/config/application_defaults.csv' == result
+    assert 's3://jornaya-prod-us-east-1-aida-insights/pyspark/config/prod/application_defaults.csv' == result
 
 
 def test_get_client_overrides_location_returns_correct_local_schema():
@@ -167,6 +168,33 @@ def test_get_as_of_timestamp_accepts_two_digit_years(spark_session):
     assert result != now
     assert isinstance(result, datetime)
     assert str(result) == "2017-01-02 08:00:00"
+
+
+def test_get_schema_location_dict_returns_only_schema_locations(spark_session):
+    config_row = [("dummy_value", "some_value", "some_location"),
+                  (ConfigurationOptions.SCHEMA_LOCATION, Schemas.HASH_MAPPING, "../samples/hash_mapping")]
+    config_df = spark_session.createDataFrame(config_row, config.configuration_schema())
+    result = config.get_schema_location_dict(config_df)
+
+    assert len(result) == 1
+    assert result[Schemas.HASH_MAPPING] == "../samples/hash_mapping"
+
+
+def test_get_schema_location_dict_returns_all_locations_from_config(spark_session):
+    config_row = [
+        (ConfigurationOptions.SCHEMA_LOCATION, Schemas.CLASSIF_LEAD, "../samples/classification/classif_lead"),
+        (ConfigurationOptions.SCHEMA_LOCATION, Schemas.CONSUMER_VIEW, "../samples/cis/consumer_view"),
+        (ConfigurationOptions.SCHEMA_LOCATION, Schemas.LEAD_EVENT, "../samples/cis/lead_event"),
+        (ConfigurationOptions.SCHEMA_LOCATION, Schemas.HASH_MAPPING, "../samples/hash_mapping")
+    ]
+    config_df = spark_session.createDataFrame(config_row, config.configuration_schema())
+    result = config.get_schema_location_dict(config_df)
+
+    assert len(result) == 4
+    assert result[Schemas.CLASSIF_LEAD] == "../samples/classification/classif_lead"
+    assert result[Schemas.CONSUMER_VIEW] == "../samples/cis/consumer_view"
+    assert result[Schemas.LEAD_EVENT] == "../samples/cis/lead_event"
+    assert result[Schemas.HASH_MAPPING] == "../samples/hash_mapping"
 
 
 def test_get_as_of_timestamp_accepts_four_digit_years(spark_session):

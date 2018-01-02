@@ -3,61 +3,11 @@ from datetime import datetime
 import pytest
 
 from src.jobs.consumer_insights import consumer_insights_processing as cis
-from src.shared.constants import Environments, ConsumerViewSchema, PiiHashingColumnNames, IdentifierTypes as Type
+from src.shared.constants import ConsumerViewSchema, PiiHashingColumnNames, IdentifierTypes as Type
 from tests.helpers import extract_rows_for_col
 from tests.jobs.consumer_insights import schema
 
 spark_session_enabled = pytest.mark.usefixtures("spark_session")
-
-
-def test_build_consumer_view_schema_location_returns_correct_local_schema():
-    result = cis.build_consumer_view_schema_location(Environments.LOCAL)
-    assert '../samples/cis/consumer_view' == result
-
-
-def test_build_consumer_view_schema_location_returns_correct_dev_schema():
-    result = cis.build_consumer_view_schema_location(Environments.DEV)
-    assert 's3://jornaya-dev-us-east-1-prj/cis/consumer_view_papaya' == result
-
-
-def test_build_consumer_view_schema_location_returns_correct_qa_schema():
-    result = cis.build_consumer_view_schema_location(Environments.QA)
-    assert 's3://jornaya-qa-us-east-1-prj/cis/consumer_view' == result
-
-
-def test_build_consumer_view_schema_location_returns_correct_staging_schema():
-    result = cis.build_consumer_view_schema_location(Environments.STAGING)
-    assert 's3://jornaya-staging-us-east-1-prj/cis/consumer_view' == result
-
-
-def test_build_consumer_view_schema_location_returns_correct_prod_schema():
-    result = cis.build_consumer_view_schema_location(Environments.PROD)
-    assert 's3://jornaya-prod-us-east-1-prj/cis/consumer_view' == result
-
-
-def test_build_lead_event_schema_location_returns_correct_local_schema():
-    result = cis.build_lead_event_schema_location(Environments.LOCAL)
-    assert '../samples/cis/lead_event' == result
-
-
-def test_build_lead_event_schema_location_returns_correct_dev_schema():
-    result = cis.build_lead_event_schema_location(Environments.DEV)
-    assert 's3://jornaya-dev-us-east-1-prj/cis/lead_event' == result
-
-
-def test_build_lead_event_schema_location_returns_correct_qa_schema():
-    result = cis.build_lead_event_schema_location(Environments.QA)
-    assert 's3://jornaya-qa-us-east-1-prj/cis/lead_event' == result
-
-
-def test_build_lead_event_schema_location_returns_correct_staging_schema():
-    result = cis.build_lead_event_schema_location(Environments.STAGING)
-    assert 's3://jornaya-staging-us-east-1-prj/cis/lead_event' == result
-
-
-def test_build_lead_event_schema_location_returns_correct_prod_schema():
-    result = cis.build_lead_event_schema_location(Environments.PROD)
-    assert 's3://jornaya-prod-us-east-1-prj/cis/lead_event' == result
 
 
 def test_join_pii_hashing_to_consumer_view_df_returns_expected_values_for_one_entry(spark_session):

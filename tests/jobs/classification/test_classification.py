@@ -4,37 +4,12 @@ import pytest
 
 from jobs.classification import classify
 from jobs.init import config
-from shared.constants import Environments, ClassificationSetElementXref, ClassificationLead, ConfigurationOptions
+from shared.constants import ClassificationSetElementXref, ConfigurationOptions
 from tests.helpers import extract_rows_for_col
 from tests.jobs.classification import schema
 from tests.jobs.scoring.test_scoring import flat_classified_results_schema, all_expected_subcategory_column_names
 
 spark_session_enabled = pytest.mark.usefixtures("spark_session")
-
-
-def test_get_classification_schema_location_returns_correct_for_dev():
-    file_name = classify.get_classification_schema_location(Environments.DEV, ClassificationLead.SCHEMA_NAME)
-    assert 's3://jornaya-dev-us-east-1-prj/classification/classif_lead/classif_lead/' == file_name
-
-
-def test_get_classification_schema_location_returns_correct_for_qa():
-    file_name = classify.get_classification_schema_location(Environments.QA, ClassificationLead.SCHEMA_NAME)
-    assert 's3://jornaya-qa-us-east-1-prj/classification/classif_lead/classif_lead/' == file_name
-
-
-def test_get_classification_schema_location_returns_correct_for_staging():
-    file_name = classify.get_classification_schema_location(Environments.STAGING, ClassificationLead.SCHEMA_NAME)
-    assert 's3://jornaya-staging-us-east-1-prj/classification/classif_lead/classif_lead/' == file_name
-
-
-def test_get_classification_schema_location_returns_correct_for_prod():
-    file_name = classify.get_classification_schema_location(Environments.PROD, ClassificationLead.SCHEMA_NAME)
-    assert 's3://jornaya-prod-us-east-1-prj/classification/classif_lead/classif_lead/' == file_name
-
-
-def test_get_classification_schema_location_returns_correct_for_local():
-    file_name = classify.get_classification_schema_location(Environments.LOCAL, ClassificationLead.SCHEMA_NAME)
-    assert '../samples/classification/classif_lead/classif_lead/' == file_name
 
 
 def test_join_input_to_lead_data_frame_returns_expected_columns(spark_session):

@@ -138,7 +138,18 @@ class ConfigurationOptions:  # pylint:disable=too-few-public-methods
     EVENT_LOOKBACK = "event_lookback"
     FREQUENCY_THRESHOLD = "frequency_threshold"
     INDUSTRY_RESULT = "industry_result"
+    SCHEMA_LOCATION = "schema_location"
     ASOF = "asof"
+
+
+class Schemas:  # pylint:disable=too-few-public-methods
+    HASH_MAPPING = "hash_mapping"
+    CLASSIF_SUBCATEGORY = "classif_subcategory"
+    CLASSIF_SET_ELEM_XREF = "classif_set_elem_xref"
+    CLASSIF_LEAD = "classif_lead"
+    CONSUMER_VIEW = "consumer_view"
+    LEAD_EVENT = "lead_event"
+    PUBLISHER_PERMISSIONS = "publisher_permissions"
 
 
 class LeadEventSchema:  # pylint:disable=too-few-public-methods

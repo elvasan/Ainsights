@@ -8,31 +8,6 @@ from tests.jobs.consumer_insights import schema
 spark_session_enabled = pytest.mark.usefixtures("spark_session")
 
 
-def test_build_v_campaign_opt_in_state_schema_location_returns_correct_local_schema():
-    result = pub.build_v_campaign_opt_in_state_schema_location(Environments.LOCAL)
-    assert '../samples/publisher_permissions/v_campaign_opt_in_state' == result
-
-
-def test_build_v_campaign_opt_in_state_schema_location_returns_correct_dev_schema():
-    result = pub.build_v_campaign_opt_in_state_schema_location(Environments.DEV)
-    assert 's3://jornaya-dev-us-east-1-prj/publisher_permissions/v_campaign_opt_in_state' == result
-
-
-def test_build_v_campaign_opt_in_state_schema_location_returns_correct_qa_schema():
-    result = pub.build_v_campaign_opt_in_state_schema_location(Environments.QA)
-    assert 's3://jornaya-qa-us-east-1-prj/publisher_permissions/v_campaign_opt_in_state' == result
-
-
-def test_build_v_campaign_opt_in_state_schema_location_returns_correct_staging_schema():
-    result = pub.build_v_campaign_opt_in_state_schema_location(Environments.STAGING)
-    assert 's3://jornaya-staging-us-east-1-prj/publisher_permissions/v_campaign_opt_in_state' == result
-
-
-def test_build_v_campaign_opt_in_state_schema_location_returns_correct_prod_schema():
-    result = pub.build_v_campaign_opt_in_state_schema_location(Environments.PROD)
-    assert 's3://jornaya-prod-us-east-1-prj/publisher_permissions/v_campaign_opt_in_state' == result
-
-
 def test_filter_campaign_opt_in_state_returns_only_campaign_keys_for_aida_insights(spark_session):
     # Create test data where all apps are opted in but we have a mix off application keys (1 & 2)
     view_data = [('CKAAA', Environments.AIDA_INSIGHTS_APP_CODE, PublisherPermissions.OPT_IN_VALUE, None, None),
