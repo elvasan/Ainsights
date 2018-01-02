@@ -2,9 +2,10 @@ import boto3
 
 sfn_client = boto3.client('stepfunctions')
 
+
 def lambda_handler(event, context):
 
-    client_name = event['Records'][0]['s3']['object']['key'].split("/")[2]
+    client_name = event['Records'][0]['s3']['object']['key'].split("/")[1]
 
     try:
         response = sfn_client.start_execution(
