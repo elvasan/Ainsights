@@ -55,45 +55,43 @@ def get_application_defaults_location(environment):
     return bucket_prefix + "pyspark/config/{}/application_defaults.csv".format(environment)
 
 
-def get_client_overrides_location(environment, client_name):
+def get_client_overrides_location(environment, client_name, job_run_id):
     """
     Builds an absolute path to the client overrides file.
 
     :param environment: The current environment (local, dev, qa, prod)
     :param client_name: The name of the client running the application
+    :param job_run_id: The id of the job run.
     :return: A string for locating the client override csv.
     """
     if environment == Environments.LOCAL:
         bucket_prefix = Environments.LOCAL_BUCKET_PREFIX
     else:
         bucket_prefix = 's3://jornaya-{0}-{1}-aida-insights/'.format(environment, Environments.AWS_REGION)
-    return '{0}{1}/input/client_overrides.csv'.format(bucket_prefix, client_name)
+    return '{0}app_data/{1}/{1}_{2}/input/client_overrides.csv'.format(bucket_prefix, client_name, job_run_id)
 
 
-def get_application_default_df(spark, environment, logger):
+def get_application_default_df(spark, environment):
     """
     Gets the application default configuration settings.
     :param spark: The application Spark Session
     :param environment: The current environment (local, dev, qa, staging, prod)
-    :param logger: The Spark log4j logger
     :return: A DataFrame containing the application default configuration settings
     """
     defaults_location = get_application_defaults_location(environment)
-    logger.info("Reading application defaults config from {location}".format(location=defaults_location))
     return load_csv_file(spark, defaults_location, configuration_schema())
 
 
-def get_client_override_df(spark, environment, client_name, logger):
+def get_client_override_df(spark, environment, client_name, job_run_id):
     """
     Gets the client override configuration settings.
     :param spark: The application Spark Session
     :param environment: The current environment (local, dev, qa, staging, prod)
     :param client_name: The name of the client which the app is running
-    :param logger: The Spark log4j logger
+    :param job_run_id: The id of the job run.
     :return: A DataFrame containing the client override configuration settings
     """
-    overrides_location = get_client_overrides_location(environment, client_name)
-    logger.info("Reading client overrides config from {location}".format(location=overrides_location))
+    overrides_location = get_client_overrides_location(environment, client_name, job_run_id)
     return load_csv_file(spark, overrides_location, configuration_schema())
 
 
@@ -128,18 +126,18 @@ def get_subcategory_key_for_config_abbreviation(config_df, subcategory_df):
         .drop(ClassificationSubcategory.SUBCATEGORY_CD)
 
 
-def get_application_config_df(spark, environment, client_name, logger):
+def get_application_config_df(spark, environment, client_name, job_run_id):
     """
     Gets the overall application configuration by combining the application defaults and client overrides. Then it
     converts the config abbreviation to the classification subcategory key and returns a DataFrame.
     :param spark: The application Spark Session
     :param environment: The current environment (local, dev, qa, staging, prod)
     :param client_name: The name of the client which the app is running
-    :param logger: The Spark log4j logger
+    :param job_run_id: The id of the job run.
     :return: A DataFrame containing the overall application configuration settings
     """
-    application_defaults_df = get_application_default_df(spark, environment, logger)
-    client_overrides_df = get_client_override_df(spark, environment, client_name, logger)
+    application_defaults_df = get_application_default_df(spark, environment)
+    client_overrides_df = get_client_override_df(spark, environment, client_name, job_run_id)
 
     configuration_df = merge_client_config_with_app_config(client_overrides_df, application_defaults_df)
 

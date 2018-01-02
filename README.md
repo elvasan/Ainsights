@@ -82,6 +82,64 @@ directory we have `jobs` which contains all of the modules necessary to
 run the application. We have a samples directory in the project root to
 include input csv files and parquet transformation files.
 
+## Local Sample Files
+
+In order to run this project locally we need to have a local samples directory
+set up properly. This should be maintained in version control but the following
+directory structure should be followed:
+
+```
+aida-insights
+│
+└───samples
+│   │
+│   └───app_data
+│   |   │
+│   |   └───beestest
+│   |       │
+│   |       └───beestest_yyyy_mm_dd_hh_mm_ss_ffffff
+│   |           │
+│   |           └───input
+│   |           │
+│   |           └───output
+│   │
+│   └───cis
+│   │
+│   └───classification
+│   │
+│   └───hash_mapping
+│   │
+│   └───publisher_permissions
+│   │
+│   └───pyspark
+│       │
+│       └───config
+│           │
+│           └───dev
+│           |   │
+│           |   └───application_defaults.csv
+│           │
+│           └───local
+│           |   │
+│           |   └───application_defaults.csv
+│           │
+│           └───prod
+│           |   │
+│           |   └───application_defaults.csv
+│           │
+│           └───qa
+│           |   │
+│           |   └───application_defaults.csv
+│           │
+│           └───staging
+│               │
+│               └───application_defaults.csv
+│
+└───src
+|___...
+```
+
+
 ## Packaging and Running the Application Locally
 
 When we submit the job to Spark we want to submit our main.py file as our
@@ -90,7 +148,7 @@ This can be accomplished with the following actions:
 
     $ make build
     $ cd dist
-    $ spark-submit --py-files jobs.zip main.py --job-args `job args go here`
+    $ spark-submit --py-files jobs.zip main.py --job-args environment=local client_name=beestest job_run_id=yyyy_mm_dd_hh_mm_ss_ffffff
 
 The first line uses our accompanying Makefile to build and package our
 files into a `dist/` directory. Within that directory we have our main.py file
@@ -103,15 +161,32 @@ our jobs zip file as a parameter using the `--py-files` switch. We specify
 the entry point into our application, `main.py` and the location of files we need
 with the `---job-args` flag.
 
+**IMPORTANT** -
+**There are three job arguments you need to run the the application locally:**
+
+* client_name
+* environment
+* job_run_id
+
+Example:
+
+    --job-args environment=local client_name=beestest job_run_id=yyyy_mm_dd_hh_mm_ss_ffffff
+
 ### Main.py arguments command
 
 * `--job-args` Extra arguments to send to the PySpark job
 
 ### AIDA Insights Job Arguments
 
+As of this writing there are three job arguments that are required to run aida-insights:
+
+* client_name
+* environment
+* job_run_id
+
 Example:
 
-    --job-args foo=bar
+    --job-args environment=local client_name=beestest job_run_id=yyyy_mm_dd_hh_mm_ss_ffffff
 
 ## Intellij IDEA
 

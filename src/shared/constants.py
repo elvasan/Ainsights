@@ -181,3 +181,8 @@ class PublisherPermissions:  # pylint:disable=too-few-public-methods
     VIEW_CAMPAIGN_KEY = "view_campaign_key"
     OPT_IN_VALUE = 1
     OPT_OUT_VALUE = 0
+
+
+class Test:  # pylint:disable=too-few-public-methods
+    JOB_RUN_ID = '2018_01_02'
+    CLIENT_NAME = 'beestest'

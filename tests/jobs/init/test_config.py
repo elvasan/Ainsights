@@ -5,10 +5,8 @@ from pyspark.sql.types import StructField, StructType, StringType
 
 from jobs.init import config
 from src.shared.constants import Environments, ConfigurationSchema, ClassificationSubcategory, Schemas, \
-    ConfigurationOptions
+    ConfigurationOptions, Test
 from tests.helpers import extract_rows_for_col
-
-CLIENT_NAME = 'beestest'
 
 # define mark (need followup if need this)
 spark_session_enabled = pytest.mark.usefixtures("spark_session")
@@ -40,28 +38,28 @@ def test_get_application_defaults_location_returns_correct_prod_schema():
 
 
 def test_get_client_overrides_location_returns_correct_local_schema():
-    result = config.get_client_overrides_location(Environments.LOCAL, CLIENT_NAME)
-    assert '../samples/beestest/input/client_overrides.csv' == result
+    result = config.get_client_overrides_location(Environments.LOCAL, Test.CLIENT_NAME, Test.JOB_RUN_ID)
+    assert '../samples/app_data/beestest/beestest_2018_01_02/input/client_overrides.csv' == result
 
 
 def test_get_client_overrides_location_returns_correct_dev_schema():
-    result = config.get_client_overrides_location(Environments.DEV, CLIENT_NAME)
-    assert 's3://jornaya-dev-us-east-1-aida-insights/beestest/input/client_overrides.csv' == result
+    result = config.get_client_overrides_location(Environments.DEV, Test.CLIENT_NAME, Test.JOB_RUN_ID)
+    assert 's3://jornaya-dev-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/input/client_overrides.csv' == result
 
 
 def test_get_client_overrides_location_returns_correct_qa_schema():
-    result = config.get_client_overrides_location(Environments.QA, CLIENT_NAME)
-    assert 's3://jornaya-qa-us-east-1-aida-insights/beestest/input/client_overrides.csv' == result
+    result = config.get_client_overrides_location(Environments.QA, Test.CLIENT_NAME, Test.JOB_RUN_ID)
+    assert 's3://jornaya-qa-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/input/client_overrides.csv' == result
 
 
 def test_get_client_overrides_location_returns_correct_staging_schema():
-    result = config.get_client_overrides_location(Environments.STAGING, CLIENT_NAME)
-    assert 's3://jornaya-staging-us-east-1-aida-insights/beestest/input/client_overrides.csv' == result
+    result = config.get_client_overrides_location(Environments.STAGING, Test.CLIENT_NAME, Test.JOB_RUN_ID)
+    assert 's3://jornaya-staging-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/input/client_overrides.csv' == result
 
 
 def test_get_client_overrides_location_returns_correct_prod_schema():
-    result = config.get_client_overrides_location(Environments.PROD, CLIENT_NAME)
-    assert 's3://jornaya-prod-us-east-1-aida-insights/beestest/input/client_overrides.csv' == result
+    result = config.get_client_overrides_location(Environments.PROD, Test.CLIENT_NAME, Test.JOB_RUN_ID)
+    assert 's3://jornaya-prod-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/input/client_overrides.csv' == result
 
 
 def test_merge_client_config_with_app_config_returns_correct_config_when_client_override_is_empty(spark_session):
