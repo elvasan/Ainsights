@@ -1,13 +1,13 @@
 option,config_abbrev,value
-event_lookback,auto_sales,30
-event_lookback,education,90
-event_lookback,insurance,20
-event_lookback,financial_services,10
-event_lookback,real_estate,30
-event_lookback,jobs,10
-event_lookback,legal,20
-event_lookback,home_services,5
-event_lookback,other,5
+event_lookback,auto_sales,90
+event_lookback,education,180
+event_lookback,insurance,90
+event_lookback,financial_services,90
+event_lookback,real_estate,90
+event_lookback,jobs,90
+event_lookback,legal,90
+event_lookback,home_services,90
+event_lookback,other,90
 frequency_threshold,auto_sales,3
 frequency_threshold,education,2
 frequency_threshold,insurance,3
@@ -26,4 +26,4 @@ industry_result,jobs,jobs
 industry_result,legal,legal
 industry_result,home_services,home_services
 industry_result,other,other
-asof,asof,11/17/17 12:00
+asof,asof,11/15/17 12:00

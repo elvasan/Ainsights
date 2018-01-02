@@ -145,7 +145,7 @@ def test_get_as_of_timestamp_returns_current_utc_datetime_when_no_config_value_p
     assert result == now
 
 
-def test_get_as_of_timestamp_returns_spark_readable_datetime(spark_session):
+def test_get_as_of_timestamp_returns_iso_formatted_datetime(spark_session):
     config_row = [("asof", "asof", "10/16/17 12:00")]
     config_df = spark_session.createDataFrame(config_row, config.configuration_schema())
 
@@ -157,7 +157,7 @@ def test_get_as_of_timestamp_returns_spark_readable_datetime(spark_session):
     assert str(result) == "2017-10-16 12:00:00"
 
 
-def test_get_as_of_timestamp_returns_expected_datetime(spark_session):
+def test_get_as_of_timestamp_accepts_two_digit_years(spark_session):
     config_row = [("asof", "asof", "1/2/17 8:00")]
     config_df = spark_session.createDataFrame(config_row, config.configuration_schema())
 
@@ -167,6 +167,27 @@ def test_get_as_of_timestamp_returns_expected_datetime(spark_session):
     assert result != now
     assert isinstance(result, datetime)
     assert str(result) == "2017-01-02 08:00:00"
+
+
+def test_get_as_of_timestamp_accepts_four_digit_years(spark_session):
+    config_row = [("asof", "asof", "1/2/2017 4:30")]
+    config_df = spark_session.createDataFrame(config_row, config.configuration_schema())
+
+    now = datetime.utcnow()
+    result = config.get_as_of_timestamp(config_df, now)
+
+    assert result != now
+    assert isinstance(result, datetime)
+    assert str(result) == "2017-01-02 04:30:00"
+
+
+def test_get_as_of_timestamp_returns_value_error_when_invalid_date_format(spark_session):
+    config_row = [("asof", "asof", "1/2/7 4:30")]
+    config_df = spark_session.createDataFrame(config_row, config.configuration_schema())
+
+    now = datetime.utcnow()
+    with pytest.raises(ValueError):
+        config.get_as_of_timestamp(config_df, now)
 
 
 def classif_subcategory_schema():
