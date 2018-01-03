@@ -24,21 +24,22 @@ def analyze(spark, logger, **job_args):  # pylint:disable=too-many-locals, too-m
     """
     client_name = job_args["client_name"]
     environment = job_args["environment"]
-
-    # We will most likely take this as an input parameter in the future
+    job_run_id = job_args["job_run_id"]
     time_stamp = datetime.datetime.utcnow()
 
     logger.info("STARTING UP APPLICATION")
     logger.info("USING THE FOLLOWING JOB ARGUMENTS")
     logger.info("CLIENT NAME: " + client_name)
     logger.info("ENVIRONMENT: " + environment)
+    logger.info("TIMESTAMP: " + str(time_stamp))
+    logger.info("JOB RUN ID: " + job_run_id)
 
-    app_config_df = get_application_config_df(spark, environment, client_name, logger)
+    app_config_df = get_application_config_df(spark, environment, client_name, job_run_id)
     as_of_timestamp = get_as_of_timestamp(app_config_df, time_stamp)
     schema_locations = get_schema_location_dict(app_config_df)
 
     logger.info("RAW INPUT FILE START")
-    raw_input_data_frame = process_input_file(spark, logger, client_name, environment)
+    raw_input_data_frame = process_input_file(spark, logger, client_name, environment, job_run_id)
     logger.info("RAW INPUT FILE END")
 
     logger.info("PII HASHING START")
@@ -102,6 +103,6 @@ def analyze(spark, logger, **job_args):  # pylint:disable=too-many-locals, too-m
     internal_output_df = transform_scoring_columns_for_output(classify_subcategory_df, internal_scored_df)
     external_output_df = transform_scoring_columns_for_output(classify_subcategory_df, external_scored_df)
 
-    write_output(environment, client_name, time_stamp, internal_output_df, OutputFileNames.INTERNAL)
-    write_output(environment, client_name, time_stamp, external_output_df, OutputFileNames.EXTERNAL)
+    write_output(environment, client_name, job_run_id, internal_output_df, OutputFileNames.INTERNAL)
+    write_output(environment, client_name, job_run_id, external_output_df, OutputFileNames.EXTERNAL)
     logger.info("WRITE OUTPUT END")

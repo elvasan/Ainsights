@@ -6,7 +6,7 @@ from shared.constants import InputColumnNames, Environments, IdentifierTypes, Ra
 ID_SEPARATOR = ':'
 
 
-def process_input_file(spark, logger, client_name, environment):
+def process_input_file(spark, logger, client_name, environment, job_run_id):
     """
     Given the client name and environment, we attempt to grab the client's CSV file and convert it to a DataFrame
     that is used for the execution of our application.
@@ -14,10 +14,11 @@ def process_input_file(spark, logger, client_name, environment):
     :param logger: The underlying JVM logger
     :param client_name: The name of the client
     :param environment: The current deployment environment
+    :param job_run_id: The id of the job run
     :return: A DataFrame consisting of input data that was read in from a CSV
     """
     logger.info("input_processing: start to read file")
-    full_file_name = build_input_csv_file_name(environment, client_name)
+    full_file_name = build_input_csv_file_name(environment, client_name, job_run_id)
 
     logger.info("input_processing: trying to read file named: {0}".format(full_file_name))
     raw_data_frame = load_csv_file(spark, full_file_name, input_csv_schema())
@@ -25,21 +26,24 @@ def process_input_file(spark, logger, client_name, environment):
     return transform_input_csv(raw_data_frame)
 
 
-def build_input_csv_file_name(environment, client_name):
+def build_input_csv_file_name(environment, client_name, job_run_id):
     """
     Constructs a known file location based on environment and client_name
     File name should be environment, aws_region, client_name
-    Development example: s3://jornaya-dev-us-east-1-aida-insights/beestest/input/beestest.csv
-    Local example: ../samples/beestest/input/beestest.csv
+    Development example:
+        s3://jornaya-dev-us-east-1-aida-insights/app_data/beestest/beestest_yyyy_mm_dd/input/beestest_yyyy_mm_dd.csv
+    Local example:
+        ../samples/app_data/beestest/beestest_yyyy_mm_dd/input/beestest_yyyy_mm_dd.csv
     :param environment: The current execution environment
     :param client_name: The name of the client
+    :param job_run_id: The id of the job run
     :return: A string representing the location of the input csv file.
     """
     if environment == Environments.LOCAL:
         bucket_prefix = Environments.LOCAL_BUCKET_PREFIX
     else:
         bucket_prefix = 's3://jornaya-{0}-{1}-aida-insights/'.format(environment, Environments.AWS_REGION)
-    return '{0}{1}/input/{2}.csv'.format(bucket_prefix, client_name, client_name)
+    return '{0}app_data/{1}/{1}_{2}/input/{1}_{2}.csv'.format(bucket_prefix, client_name, job_run_id)
 
 
 def load_csv_file(spark, full_file_name, schema):

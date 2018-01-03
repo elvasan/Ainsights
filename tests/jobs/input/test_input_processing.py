@@ -7,35 +7,35 @@ from pyspark.sql.utils import AnalysisException
 
 from jobs.input.input_processing import transform_input_csv, build_input_csv_file_name, input_csv_schema, \
     load_csv_file, process_input_file
-from shared.constants import Environments, InputColumnNames, IdentifierTypes
+from shared.constants import Environments, InputColumnNames, IdentifierTypes, Test
 
 # define mark (need followup if need this)
 spark_session_enabled = pytest.mark.usefixtures("spark_session")
 
 
 def test_build_input_csv_file_name_returns_correct_dev_env_name():
-    full_name = build_input_csv_file_name(Environments.DEV, "beestest")
-    assert full_name == 's3://jornaya-dev-us-east-1-aida-insights/beestest/input/beestest.csv'
+    full_name = build_input_csv_file_name(Environments.DEV, Test.CLIENT_NAME, Test.JOB_RUN_ID)
+    assert full_name == 's3://jornaya-dev-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/input/beestest_2018_01_02.csv'
 
 
 def test_build_input_csv_file_name_returns_correct_qa_env_name():
-    full_name = build_input_csv_file_name(Environments.QA, "beestest")
-    assert full_name == 's3://jornaya-qa-us-east-1-aida-insights/beestest/input/beestest.csv'
+    full_name = build_input_csv_file_name(Environments.QA, Test.CLIENT_NAME, Test.JOB_RUN_ID)
+    assert full_name == 's3://jornaya-qa-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/input/beestest_2018_01_02.csv'
 
 
 def test_build_input_csv_file_name_returns_correct_staging_env_name():
-    full_name = build_input_csv_file_name(Environments.STAGING, "beestest")
-    assert full_name == 's3://jornaya-staging-us-east-1-aida-insights/beestest/input/beestest.csv'
+    full_name = build_input_csv_file_name(Environments.STAGING, Test.CLIENT_NAME, Test.JOB_RUN_ID)
+    assert full_name == 's3://jornaya-staging-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/input/beestest_2018_01_02.csv'
 
 
 def test_build_input_csv_file_name_returns_correct_prod_env_name():
-    full_name = build_input_csv_file_name(Environments.PROD, "beestest")
-    assert full_name == 's3://jornaya-prod-us-east-1-aida-insights/beestest/input/beestest.csv'
+    full_name = build_input_csv_file_name(Environments.PROD, Test.CLIENT_NAME, Test.JOB_RUN_ID)
+    assert full_name == 's3://jornaya-prod-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/input/beestest_2018_01_02.csv'
 
 
 def test_build_input_csv_file_name_returns_local_env_name_as_samples_directory():
-    full_name = build_input_csv_file_name(Environments.LOCAL, "beestest")
-    assert full_name == '../samples/beestest/input/beestest.csv'
+    full_name = build_input_csv_file_name(Environments.LOCAL, Test.CLIENT_NAME, Test.JOB_RUN_ID)
+    assert full_name == '../samples/app_data/beestest/beestest_2018_01_02/input/beestest_2018_01_02.csv'
 
 
 def test_transform_input_csv_returns_empty_data_frame_when_no_data_present(spark_session):
@@ -53,7 +53,7 @@ def test_transform_input_csv_returns_proper_data_frame_schema_columns(spark_sess
 
 
 def test_load_csv_file_loads_file(spark_session, tmpdir):
-    csv_file = tmpdir.mkdir('data').join('beestest.csv')
+    csv_file = tmpdir.mkdir('data').join('beestest_yyyy_mm_dd_hh_mm_ss_ffffff.csv')
     csv_text = "recordid,phone01,phone02,phone03,phone04,email01,email02,email03,leadid01,leadid02,leadid03,asof\r" \
                "1,,,,,,,,LLAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA,,,\r" \
                "2,,,,,,,,LLBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB,,,\r"
@@ -63,7 +63,7 @@ def test_load_csv_file_loads_file(spark_session, tmpdir):
 
 
 def test_process_input_file_end_to_end(spark_session, tmpdir, monkeypatch):
-    csv_file = tmpdir.mkdir('data').join('beestest.csv')
+    csv_file = tmpdir.mkdir('data').join('beestest_yyyy_mm_dd_hh_mm_ss_ffffff.csv')
     csv_text = "recordid,phone01,phone02,phone03,phone04,email01,email02,email03,leadid01,leadid02,leadid03,asof\r" \
                "1,,,,,,,,LLAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA,,,\r" \
                "2,,,,,,,,LLBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB,,,\r"
@@ -71,8 +71,8 @@ def test_process_input_file_end_to_end(spark_session, tmpdir, monkeypatch):
     mock_logger = mock.Mock()
 
     # mock csv file name function to return local unit test csv file from tmp directory
-    monkeypatch.setattr("jobs.input.input_processing.build_input_csv_file_name", lambda x, y: csv_file.strpath)
-    result_df = process_input_file(spark_session, mock_logger, "beestest", "unit_test")
+    monkeypatch.setattr("jobs.input.input_processing.build_input_csv_file_name", lambda x, y, z: csv_file.strpath)
+    result_df = process_input_file(spark_session, mock_logger, Test.CLIENT_NAME, "unit_test", Test.JOB_RUN_ID)
     extracted_row_values = [[i.record_id, i.input_id_raw, i.input_id_type, i.has_error, i.error_message] for i
                             in result_df.select(
             result_df.record_id, result_df.input_id_raw, result_df.input_id_type,
@@ -86,21 +86,21 @@ def test_process_input_file_end_to_end(spark_session, tmpdir, monkeypatch):
 def test_process_input_file_throws_analysis_exception_with_missing_input_file(spark_session, monkeypatch):
     mock_logger = mock.Mock()
     # mock csv file name function to return invalid path
-    monkeypatch.setattr("jobs.input.input_processing.build_input_csv_file_name", lambda x, y: "invalid_file_name")
+    monkeypatch.setattr("jobs.input.input_processing.build_input_csv_file_name", lambda x, y, z: "invalid_file_name")
     with pytest.raises(AnalysisException):
-        process_input_file(spark_session, mock_logger, "beestest", "unit_test")
+        process_input_file(spark_session, mock_logger, Test.CLIENT_NAME, "unit_test", Test.JOB_RUN_ID)
 
 
 def test_process_input_file_with_invalid_csv_file_format_throws_java_error(spark_session, tmpdir, monkeypatch):
-    csv_file = tmpdir.mkdir('data').join('beestest.csv')
+    csv_file = tmpdir.mkdir('data').join('beestest_yyyy_mm_dd_hh_mm_ss_ffffff.csv')
     csv_text = "wrong,header,values\r" \
                "hello,world,testing\r"
     csv_file.write(csv_text)
     mock_logger = mock.Mock()
     # mock csv file name function to return local unit test csv file from tmp directory
-    monkeypatch.setattr("jobs.input.input_processing.build_input_csv_file_name", lambda x, y: csv_file.strpath)
+    monkeypatch.setattr("jobs.input.input_processing.build_input_csv_file_name", lambda x, y, z: csv_file.strpath)
     with pytest.raises(py4j.protocol.Py4JJavaError):
-        result_df = process_input_file(spark_session, mock_logger, "beestest", "unit_test")
+        result_df = process_input_file(spark_session, mock_logger, Test.CLIENT_NAME, "unit_test", Test.JOB_RUN_ID)
         result_df.collect()
 
 
