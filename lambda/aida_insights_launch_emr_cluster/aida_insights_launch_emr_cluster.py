@@ -39,6 +39,12 @@ def lambda_handler(event, context):
                                    Key='pyspark/version.txt').get('Body').read().decode('UTF-8').rstrip()
 
     try:
+        s3.put_object(
+            Bucket=bucket_name,
+            Body='',
+            Key='app_data/' + client_name + '/' + client_name + '_' + job_run_id + '/logs/'
+        )
+
         # Launch the Cluster
         response = emr.run_job_flow(
             Name="Aida Insights - "+client_name+" = "+job_run_id,
