@@ -1,14 +1,9 @@
 # Project AIDA Insights
 
 AIDA Insights is an application providing customer insights into
-a 'consumer journey' based on a set of given input identifiers
-(e.g. LeadiD, email hash, phone hash, device id) submitted using a CSV
+a 'consumer journey' based on a set of given input identifiers, currently
+a LeadiD, email hash, or phone hash, submitted using a CSV
 file format.
-
-The inspiration for the structure of this project was taken from
-[this article](https://developerzen.com/best-practices-writing-production-grade-pyspark-jobs-cb688ac4d20f)
-and groups our code into different modules that can be submitted to spark
-to be run as jobs.
 
 ## Local Development Setup
 
@@ -73,7 +68,7 @@ by typing `which pyspark` with your virtual environment activated and
 reading the output to confirm it was installed to the virtual environment
 bin directories.
 
-### Project Structure
+## Project Structure
 
 For this project we are following a structure based on a proposed best
 practice outlined in [this article](https://developerzen.com/best-practices-writing-production-grade-pyspark-jobs-cb688ac4d20f).
@@ -172,10 +167,6 @@ Example:
 
     --job-args environment=local client_name=beestest job_run_id=yyyy_mm_dd_hh_mm_ss_ffffff
 
-### Main.py arguments command
-
-* `--job-args` Extra arguments to send to the PySpark job
-
 ### AIDA Insights Job Arguments
 
 As of this writing there are three job arguments that are required to run aida-insights:
@@ -188,9 +179,9 @@ Example:
 
     --job-args environment=local client_name=beestest job_run_id=yyyy_mm_dd_hh_mm_ss_ffffff
 
-## Intellij IDEA
+## IDE Setup
 
-### Setup
+### Intellij IDEA Setup
 
 Import the code into Intellij from existing sources. For this project
 we will use Intellij IDEA with the Python plugin. This plugin is managed
@@ -244,9 +235,8 @@ Individual file:
 
     $ python -m pytest /tests/jobs/test_scoring.py
 
+### Running py.test from Intellij
 You can also run your pytests directly within Intellij. Right click
 on the file you want to test and select `Run 'py.test in test_scoring'`.
 This will initiate py.test within the Run window and you should see the
 output of your test.
-
-
