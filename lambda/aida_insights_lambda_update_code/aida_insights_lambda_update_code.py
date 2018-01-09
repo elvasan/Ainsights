@@ -1,14 +1,16 @@
-import boto3
 import os
 
-def lambda_handler(event, context):
+import boto3
+
+
+def lambda_handler(event, context):  # pylint:disable=unused-argument
     """
     Lambda function that updates the function code of other lambda functions in response to s3 events
     """
 
     lambda_client = boto3.client('lambda')
     env = os.environ['ENV']
-    bucket_name = 'jornaya-'+env+'-us-east-1-aida-insights'
+    bucket_name = 'jornaya-' + env + '-us-east-1-aida-insights'
 
     # Parse lambda name from s3 event
     zip_file_name = event['Records'][0]['s3']['object']['key'].split("/")[1]
@@ -20,9 +22,9 @@ def lambda_handler(event, context):
         lambda_client.update_function_code(
             FunctionName=lambda_name,
             S3Bucket=bucket_name,
-            S3Key='lambda/'+zip_file_name
+            S3Key='lambda/' + zip_file_name
         )
 
-    except Exception as e:
-        print(e)
-        raise e
+    except Exception as exception:
+        print(exception)
+        raise exception

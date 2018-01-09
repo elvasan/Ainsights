@@ -1,8 +1,9 @@
-import boto3
 import os
 
+import boto3
 
-def lambda_handler(event, context):
+
+def lambda_handler(event, context):  # pylint:disable=unused-argument
     """
     Lambda function to start the step function that packages the output of an Aida Insights job run
     """
@@ -24,6 +25,6 @@ def lambda_handler(event, context):
             input=step_function_input
         )
 
-    except Exception as e:
-        print(e)
-        raise e
+    except Exception as exception:
+        print(exception)
+        raise exception

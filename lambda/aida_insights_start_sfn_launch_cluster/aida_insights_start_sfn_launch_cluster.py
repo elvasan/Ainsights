@@ -1,9 +1,10 @@
-import boto3
 import datetime
 import os
 
+import boto3
 
-def lambda_handler(event, context):
+
+def lambda_handler(event, context):  # pylint:disable=unused-argument
     """
     Lambda function to trigger the launch of the Aida Insights step function that launches the EMR cluster
     """
@@ -18,8 +19,8 @@ def lambda_handler(event, context):
     job_run_id = now.strftime('%Y_%m_%d_%H_%M_%S_%f')
 
     state_machine_input = '{' \
-                          '  "client_name" : "'+client_name+'",' \
-                          '  "job_run_id" : "'+job_run_id+'"' \
+                          '  "client_name" : "' + client_name + '",' \
+                          '  "job_run_id" : "' + job_run_id + '"' \
                           '}'
 
     try:
@@ -31,6 +32,6 @@ def lambda_handler(event, context):
             input=state_machine_input
         )
 
-    except Exception as e:
-        print(e)
-        raise e
+    except Exception as exception:
+        print(exception)
+        raise exception

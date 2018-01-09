@@ -10,7 +10,7 @@ stages:
 lint:
   before_script:
     - apk add --update gcc linux-headers musl-dev
-    - pip install -r requirements.txt
+    - pip install -r requirements.txt -r lambda/requirements.txt
   stage: lint
   script:
     - PYTHONPATH=src prospector
@@ -21,7 +21,7 @@ unit:
   stage: unit
   before_script:
     - apk add --update bash openjdk8
-    - pip install -r requirements.txt
+    - pip install -r requirements.txt -r lambda/requirements.txt
   script:
     - python -m pytest
   except:

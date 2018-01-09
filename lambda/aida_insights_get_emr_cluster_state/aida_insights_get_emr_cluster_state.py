@@ -18,16 +18,15 @@ def get_emr_cluster_state(event, emr_client):
             return 'SUCCEEDED'
         elif cluster_state == 'TERMINATED_WITH_ERRORS':
             return 'FAILED'
-        else:
-            return 'RUNNING'
 
-    except Exception as e:
-        print(e)
-        raise e
+        return 'RUNNING'
+
+    except Exception as exception:
+        print(exception)
+        raise exception
 
 
-def lambda_handler(event, context):
-
+def lambda_handler(event, context):  # pylint:disable=unused-argument
     emr_client = boto3.client('emr', region_name='us-east-1')
 
     return get_emr_cluster_state(event, emr_client)
