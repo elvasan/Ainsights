@@ -1,6 +1,6 @@
 [
   {
-    "InstanceCount" : 5,
+    "InstanceCount" : 2,
     "Market": "SPOT",
     "BidPrice" : "2.15",
     "EbsConfiguration" :
@@ -10,7 +10,7 @@
         {
           "VolumeSpecification" :
           {
-            "SizeInGB" : 1000,
+            "SizeInGB" : 500,
             "VolumeType" : "st1"
           },
           "VolumesPerInstance":1
@@ -19,7 +19,7 @@
       "EbsOptimized" : true
     },
     "InstanceRole" : "CORE",
-    "InstanceType" : "r4.8xlarge",
+    "InstanceType" : "r4.xlarge",
     "Name" : "Core - 2"
   },
   {
@@ -33,7 +33,7 @@
         {
           "VolumeSpecification" :
           {
-            "SizeInGB" : 1000,
+            "SizeInGB" : 500,
             "VolumeType" : "st1"
           },
           "VolumesPerInstance" : 1
@@ -42,7 +42,7 @@
       "EbsOptimized" : true
     },
     "InstanceRole" : "MASTER",
-    "InstanceType" : "m4.2xlarge",
+    "InstanceType" : "m4.xlarge",
     "Name" : "Master - 1"
   }
 ]
