@@ -49,7 +49,7 @@ def lambda_handler(event, context):  # pylint:disable=unused-argument, too-many-
 
         # Launch the Cluster
         response = emr.run_job_flow(
-            Name="Aida Insights - " + client_name + " = " + job_run_id,
+            Name="Aida Insights - " + client_name + " - " + job_run_id,
             LogUri=yarn_log_uri,
             ReleaseLabel='emr-5.11.0',
             Instances={
