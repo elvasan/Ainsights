@@ -17,15 +17,15 @@
     "Classification":"spark-defaults",
     "Properties":
     {
-      "spark.executor.instances": "2",
-      "spark.yarn.executor.memoryOverhead": "3072",
-      "spark.executor.memory": "26G",
-      "spark.yarn.driver.memoryOverhead": "2048",
-      "spark.driver.memory": "13G",
+      "spark.executor.instances": "74",
+      "spark.yarn.executor.memoryOverhead": "1024",
+      "spark.executor.memory": "7G",
+      "spark.yarn.driver.memoryOverhead": "1024",
+      "spark.driver.memory": "7G",
       "spark.driver.maxResultSize": "1G",
-      "spark.executor.cores": "3",
-      "spark.driver.cores": "3",
-      "spark.default.parallelism": "12",
+      "spark.executor.cores": "1",
+      "spark.driver.cores": "1",
+      "spark.default.parallelism": "148",
       "spark.sql.shuffle.partitions": "1000",
       "spark.eventLog.dir": "s3://aws-logs-794223901232-us-east-1/spark-history"
     }
