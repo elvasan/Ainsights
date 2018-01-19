@@ -1,6 +1,6 @@
 [
   {
-    "InstanceCount" : 2,
+    "InstanceCount" : 5,
     "Market": "SPOT",
     "BidPrice" : "2.15",
     "EbsConfiguration" :
@@ -19,7 +19,7 @@
       "EbsOptimized" : true
     },
     "InstanceRole" : "CORE",
-    "InstanceType" : "r4.xlarge",
+    "InstanceType" : "r4.4xlarge",
     "Name" : "Core - 2"
   },
   {
@@ -42,7 +42,7 @@
       "EbsOptimized" : true
     },
     "InstanceRole" : "MASTER",
-    "InstanceType" : "m4.xlarge",
+    "InstanceType" : "r4.4xlarge",
     "Name" : "Master - 1"
   }
 ]
