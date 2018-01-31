@@ -1,3 +1,4 @@
+export lambdas ?= $(shell ls lambda)
 
 help:
 	@echo "clean - remove all build, test, coverage and Python artifacts"
@@ -31,6 +32,11 @@ test:
 build: clean
 	mkdir -p ./dist/config
 	mkdir lambda-dist
+
+	for lambda_name in $$lambdas; do	\
+		zip -j ./lambda-dist/$$lambda_name.zip ./lambda/$$lambda_name/$$lambda_name.py;	\
+	done
+
 	cp ./src/main.py ./dist
 	cp -r ./samples/pyspark/config/dev ./dist/config/dev
 	cp -r ./samples/pyspark/config/qa ./dist/config/qa
@@ -39,13 +45,14 @@ build: clean
 	cp ./emr-deploy/emr-config.json ./dist/config/emr-config.json
 	cp ./emr-deploy/emr-instance-groups-boto.json ./dist/config/emr-instance-groups-boto.json
 	cp ./emr-deploy/emr-ec2-attributes.json ./dist/config/emr-ec2-attributes.json
-	zip -j ./lambda-dist/aida_insights_create_cloudwatch_event.zip ./lambda/aida_insights_create_cloudwatch_event/aida_insights_create_cloudwatch_event.py
-	zip -j ./lambda-dist/aida_insights_get_emr_cluster_state.zip ./lambda/aida_insights_get_emr_cluster_state/aida_insights_get_emr_cluster_state.py
-	zip -j ./lambda-dist/aida_insights_lambda_update_code.zip ./lambda/aida_insights_lambda_update_code/aida_insights_lambda_update_code.py
-	zip -j ./lambda-dist/aida_insights_launch_emr_cluster.zip ./lambda/aida_insights_launch_emr_cluster/aida_insights_launch_emr_cluster.py
-	zip -j ./lambda-dist/aida_insights_move_input_file.zip ./lambda/aida_insights_move_input_file/aida_insights_move_input_file.py
-	zip -j ./lambda-dist/aida_insights_move_output_files.zip ./lambda/aida_insights_move_output_files/aida_insights_move_output_files.py
-	zip -j ./lambda-dist/aida_insights_remove_cloudwatch_event.zip ./lambda/aida_insights_remove_cloudwatch_event/aida_insights_remove_cloudwatch_event.py
-	zip -j ./lambda-dist/aida_insights_start_sfn_launch_cluster.zip ./lambda/aida_insights_start_sfn_launch_cluster/aida_insights_start_sfn_launch_cluster.py
-	zip -j ./lambda-dist/aida_insights_start_sfn_package_output.zip ./lambda/aida_insights_start_sfn_package_output/aida_insights_start_sfn_package_output.py
+
 	cd ./src && zip -x main.py -r ../dist/jobs.zip .
+
+upload-dev: build
+	aws s3 sync dist s3://jornaya-dev-us-east-1-aida-insights/pyspark/
+	aws s3 sync lambda-dist s3://jornaya-dev-us-east-1-aida-insights/lambda
+
+deploy-dev: upload-dev
+	for lambda_name in $$lambdas; do	\
+		aws lambda update-function-code --function-name $$lambda_name --s3-bucket jornaya-dev-us-east-1-aida-insights --s3-key lambda/$$lambda_name.zip --region us-east-1; \
+	done
