@@ -10,6 +10,7 @@ from jobs.output.output_processing import write_output, transform_scoring_column
 from jobs.pii_hashing.pii_hashing import transform_raw_inputs
 from jobs.scoring.scoring import score_file, apply_thresholds_to_scored_df
 from shared.constants import OutputFileNames, Schemas
+from shared.file_summary import summarize_output_df, summarize_input_df
 
 
 def analyze(spark, logger, **job_args):  # pylint:disable=too-many-locals, too-many-statements
@@ -34,13 +35,15 @@ def analyze(spark, logger, **job_args):  # pylint:disable=too-many-locals, too-m
     logger.info("TIMESTAMP: " + str(time_stamp))
     logger.info("JOB RUN ID: " + job_run_id)
 
+    logger.info("RAW INPUT FILE START")
+    raw_input_data_frame = process_input_file(spark, logger, client_name, environment, job_run_id)
+    input_summary_df = summarize_input_df(raw_input_data_frame)
+    write_output(environment, client_name, job_run_id, input_summary_df, OutputFileNames.INPUT_SUMMARY)
+    logger.info("RAW INPUT FILE END")
+
     app_config_df = get_application_config_df(spark, environment, client_name, job_run_id)
     as_of_timestamp = get_as_of_timestamp(app_config_df, time_stamp)
     schema_locations = get_schema_location_dict(app_config_df)
-
-    logger.info("RAW INPUT FILE START")
-    raw_input_data_frame = process_input_file(spark, logger, client_name, environment, job_run_id)
-    logger.info("RAW INPUT FILE END")
 
     logger.info("PII HASHING START")
     input_data_frame = transform_raw_inputs(spark, raw_input_data_frame, schema_locations[Schemas.HASH_MAPPING])
@@ -102,7 +105,9 @@ def analyze(spark, logger, **job_args):  # pylint:disable=too-many-locals, too-m
     logger.info("WRITE OUTPUT START")
     internal_output_df = transform_scoring_columns_for_output(classify_subcategory_df, internal_scored_df)
     external_output_df = transform_scoring_columns_for_output(classify_subcategory_df, external_scored_df)
+    output_summary_df = summarize_output_df(external_output_df)
 
     write_output(environment, client_name, job_run_id, internal_output_df, OutputFileNames.INTERNAL)
     write_output(environment, client_name, job_run_id, external_output_df, OutputFileNames.EXTERNAL)
+    write_output(environment, client_name, job_run_id, output_summary_df, OutputFileNames.OUTPUT_SUMMARY)
     logger.info("WRITE OUTPUT END")

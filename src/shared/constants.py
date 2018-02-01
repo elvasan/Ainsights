@@ -30,6 +30,8 @@ class GenericColumnNames:  # pylint:disable=too-few-public-methods
 class OutputFileNames:  # pylint:disable=too-few-public-methods
     INTERNAL = 'results_internal'
     EXTERNAL = 'results_external'
+    INPUT_SUMMARY = 'input_summary'
+    OUTPUT_SUMMARY = 'output_summary'
     TIME_FORMAT = "%Y%m%d%H%M"
     PRODUCT_NAME = 'aidainsights'
 
