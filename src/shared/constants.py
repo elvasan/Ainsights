@@ -170,8 +170,8 @@ class JoinTypes:  # pylint:disable=too-few-public-methods
 
 class ThresholdValues:  # pylint:disable=too-few-public-methods
     NOT_SEEN = "NOT_SEEN"
-    IN_MARKET = "IN_MARKET"
-    IN_MARKET_HIGH = "IN_MARKET_H"
+    EARLY_JOURNEY = "EARLY_JOURNEY"
+    LATE_JOURNEY = "LATE_JOURNEY"
 
 
 class PublisherPermissions:  # pylint:disable=too-few-public-methods

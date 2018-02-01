@@ -25,9 +25,9 @@ def apply_thresholds_to_scored_df(scored_df, app_config_df):
     for column in scored_df.columns:
         if column in threshold_dict:
             scored_df = scored_df \
-                .withColumn(column, (when(scored_df[column] > threshold_dict[column], ThresholdValues.IN_MARKET_HIGH)
+                .withColumn(column, (when(scored_df[column] > threshold_dict[column], ThresholdValues.LATE_JOURNEY)
                                      .otherwise(when(scored_df[column] == 0, ThresholdValues.NOT_SEEN)
-                                                .otherwise(ThresholdValues.IN_MARKET))))
+                                                .otherwise(ThresholdValues.EARLY_JOURNEY))))
     return scored_df
 
 

@@ -190,13 +190,13 @@ def test_apply_thresholds_to_scored_df_with_varying_scores_returns_multiple_in_m
                                               InputColumnNames.RECORD_ID)
     assert results == [[100,
                         ThresholdValues.NOT_SEEN,
-                        ThresholdValues.IN_MARKET,
-                        ThresholdValues.IN_MARKET,
-                        ThresholdValues.IN_MARKET_HIGH,
+                        ThresholdValues.EARLY_JOURNEY,
+                        ThresholdValues.EARLY_JOURNEY,
+                        ThresholdValues.LATE_JOURNEY,
                         ThresholdValues.NOT_SEEN,
                         ThresholdValues.NOT_SEEN,
-                        ThresholdValues.IN_MARKET_HIGH,
-                        ThresholdValues.IN_MARKET,
+                        ThresholdValues.LATE_JOURNEY,
+                        ThresholdValues.EARLY_JOURNEY,
                         ThresholdValues.NOT_SEEN]]
 
 
@@ -224,35 +224,35 @@ def test_apply_thresholds_to_scored_df_with_multiple_rows_returns_values_for_all
     assert results == [
         [100,
          ThresholdValues.NOT_SEEN,
-         ThresholdValues.IN_MARKET,
-         ThresholdValues.IN_MARKET,
-         ThresholdValues.IN_MARKET_HIGH,
+         ThresholdValues.EARLY_JOURNEY,
+         ThresholdValues.EARLY_JOURNEY,
+         ThresholdValues.LATE_JOURNEY,
          ThresholdValues.NOT_SEEN,
          ThresholdValues.NOT_SEEN,
-         ThresholdValues.IN_MARKET_HIGH,
-         ThresholdValues.IN_MARKET,
+         ThresholdValues.LATE_JOURNEY,
+         ThresholdValues.EARLY_JOURNEY,
          ThresholdValues.NOT_SEEN
          ],
         [101,
          ThresholdValues.NOT_SEEN,
-         ThresholdValues.IN_MARKET,
-         ThresholdValues.IN_MARKET,
-         ThresholdValues.IN_MARKET_HIGH,
+         ThresholdValues.EARLY_JOURNEY,
+         ThresholdValues.EARLY_JOURNEY,
+         ThresholdValues.LATE_JOURNEY,
          ThresholdValues.NOT_SEEN,
          ThresholdValues.NOT_SEEN,
-         ThresholdValues.IN_MARKET_HIGH,
-         ThresholdValues.IN_MARKET,
+         ThresholdValues.LATE_JOURNEY,
+         ThresholdValues.EARLY_JOURNEY,
          ThresholdValues.NOT_SEEN
          ],
         [102,
          ThresholdValues.NOT_SEEN,
-         ThresholdValues.IN_MARKET,
-         ThresholdValues.IN_MARKET,
-         ThresholdValues.IN_MARKET_HIGH,
+         ThresholdValues.EARLY_JOURNEY,
+         ThresholdValues.EARLY_JOURNEY,
+         ThresholdValues.LATE_JOURNEY,
          ThresholdValues.NOT_SEEN,
          ThresholdValues.NOT_SEEN,
-         ThresholdValues.IN_MARKET_HIGH,
-         ThresholdValues.IN_MARKET,
+         ThresholdValues.LATE_JOURNEY,
+         ThresholdValues.EARLY_JOURNEY,
          ThresholdValues.NOT_SEEN
          ]
     ]
@@ -272,7 +272,7 @@ def test_apply_thresholds_to_scored_df_with_auto_value_greater_than_threshold_re
                                               [InputColumnNames.RECORD_ID,
                                                ClassificationCategoryAbbreviations.AUTO_SALES],
                                               InputColumnNames.RECORD_ID)
-    assert results == [[100, ThresholdValues.IN_MARKET_HIGH]]
+    assert results == [[100, ThresholdValues.LATE_JOURNEY]]
 
 
 def test_apply_thresholds_to_scored_df_with_auto_value_equal_to_threshold_returns_in_market(spark_session):
@@ -289,7 +289,7 @@ def test_apply_thresholds_to_scored_df_with_auto_value_equal_to_threshold_return
                                               [InputColumnNames.RECORD_ID,
                                                ClassificationCategoryAbbreviations.AUTO_SALES],
                                               InputColumnNames.RECORD_ID)
-    assert results == [[100, ThresholdValues.IN_MARKET]]
+    assert results == [[100, ThresholdValues.EARLY_JOURNEY]]
 
 
 def test_apply_thresholds_to_scored_df_with_auto_value_less_than_threshold_returns_in_market(spark_session):
@@ -306,7 +306,7 @@ def test_apply_thresholds_to_scored_df_with_auto_value_less_than_threshold_retur
                                               [InputColumnNames.RECORD_ID,
                                                ClassificationCategoryAbbreviations.AUTO_SALES],
                                               InputColumnNames.RECORD_ID)
-    assert results == [[100, ThresholdValues.IN_MARKET]]
+    assert results == [[100, ThresholdValues.EARLY_JOURNEY]]
 
 
 def test_apply_thresholds_to_scored_df_with_auto_value_zero_returns_not_seen(spark_session):
