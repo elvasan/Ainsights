@@ -1,0 +1,10 @@
+{
+  "jornaya-dev": {
+    "appName": "aida-insights",
+    "region": "us-east-1"
+ },
+  "jornaya-qa": {
+    "appName": "aida-insights",
+    "region": "us-east-1"
+  }
+}

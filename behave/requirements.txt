@@ -1,0 +1,6 @@
+
+# Common Lambda requirement
+boto3
+behave
+pytz
+

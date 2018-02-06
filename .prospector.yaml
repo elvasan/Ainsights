@@ -20,3 +20,4 @@ pylint:
 ignore-paths:
   - dist
   - lambda-dist
+  - behave

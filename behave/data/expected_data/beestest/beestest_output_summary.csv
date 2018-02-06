@@ -1,0 +1,6 @@
+Total Records,15,,,,,,,,
+,,,,,,,,,
+Stage,Auto Sales,Education,Insurance,Financial Services,Real Estate,Jobs,Legal,Home Services,Other
+NOT_SEEN,7 (46%),9 (60%),5 (33%),3 (20%),12 (80%),15 (100%),15 (100%),7 (46%),7 (46%)
+EARLY_JOURNEY,8 (53%),0 (0%),2 (13%),11 (73%),0 (0%),0 (0%),0 (0%),8 (53%),8 (53%)
+LATE_JOURNEY,0 (0%),6 (40%),8 (53%),1 (6%),3 (20%),0 (0%),0 (0%),0 (0%),0 (0%)
