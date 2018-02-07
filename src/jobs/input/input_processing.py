@@ -1,7 +1,9 @@
-from pyspark.sql.functions import lit, concat_ws, split, explode, when  # pylint:disable=no-name-in-module
+from pyspark.sql.functions import lit, concat_ws, split, explode, when, \
+    count as f_count  # pylint:disable=no-name-in-module
 from pyspark.sql.types import StructField, StructType, StringType, LongType
 
-from shared.constants import InputColumnNames, Environments, IdentifierTypes, RawInputCSVColumnNames
+from shared.constants import InputColumnNames, Environments, IdentifierTypes, RawInputCSVColumnNames, \
+    GenericColumnNames
 
 ID_SEPARATOR = ':'
 
@@ -176,3 +178,138 @@ def input_csv_schema():
          StructField(RawInputCSVColumnNames.LEAD_2, StringType()),
          StructField(RawInputCSVColumnNames.LEAD_3, StringType()),
          StructField(InputColumnNames.AS_OF_TIME, StringType())])
+
+
+def summarize_input_df(spark, input_file_df):  # pylint:disable=too-many-locals
+    """
+    Summarizes the client input file with a count of total records, a count of unique phones, emails, and leads,
+    followed by identifier coverage. Identifier Coverage is the percent of records with at least one identifier per
+    column type divided by the total number of records multiplied by 100 with a percent sign added for Steve.
+
+    Example:
+
+    +---------------+------------------+-------------------+
+    |Total Records  |17                |                   |
+    |               |                  |                   |
+    |               |Unique Identifiers|Identifier Coverage|
+    |Phone Numbers  |27                |100.0 %            |
+    |Email Addresses|21                |100.0 %            |
+    |LeadiDs        |11                |70.6 %             |
+    +---------------+------------------+-------------------+
+
+    :param spark: The application spark context
+    :param input_file_df: The customers input file containing recordids, phones, emails, and leadids as a DataFrame.
+    :return: A DataFrame summarizing the results of the input file.
+    """
+    # Drop these columns since they're meaningless here
+    truncated_input_df = input_file_df.drop(InputColumnNames.HAS_ERROR, InputColumnNames.ERROR_MESSAGE)
+    record_ids = truncated_input_df.select(InputColumnNames.RECORD_ID).distinct()
+    total_record_count = record_ids.count()
+    total_records = record_ids.select([
+        lit('Total Records').alias("labels"),
+        f_count(record_ids.record_id).alias('unique_records'),
+        lit('').alias('identifier_coverage'),
+    ])
+
+    blank_row = create_three_column_row(spark, '', '', '')
+    header_row = create_three_column_row(spark, '', 'Unique Identifiers', 'Identifier Coverage')
+
+    pivoted_df = truncated_input_df.groupby(truncated_input_df.record_id, truncated_input_df.input_id_raw) \
+        .pivot(InputColumnNames.INPUT_ID_TYPE) \
+        .count()
+
+    pivoted_df = validate_column_names(pivoted_df)
+
+    unique_phone_count = get_unique_identifier_count(pivoted_df,
+                                                     [InputColumnNames.INPUT_ID_RAW, GenericColumnNames.PHONE],
+                                                     GenericColumnNames.PHONE)
+    unique_email_count = get_unique_identifier_count(pivoted_df,
+                                                     [InputColumnNames.INPUT_ID_RAW, GenericColumnNames.EMAIL],
+                                                     GenericColumnNames.EMAIL)
+
+    unique_lead_count = get_unique_identifier_count(pivoted_df,
+                                                    [InputColumnNames.INPUT_ID_RAW, GenericColumnNames.LEAD_ID],
+                                                    GenericColumnNames.LEAD_ID)
+
+    phone_count = get_record_count_for_identifier(pivoted_df, GenericColumnNames.PHONE)
+    email_count = get_record_count_for_identifier(pivoted_df, GenericColumnNames.EMAIL)
+    leads_count = get_record_count_for_identifier(pivoted_df, GenericColumnNames.LEAD_ID)
+
+    phone_coverage = calculate_identifier_coverage(phone_count, total_record_count)
+    email_coverage = calculate_identifier_coverage(email_count, total_record_count)
+    lead_coverage = calculate_identifier_coverage(leads_count, total_record_count)
+
+    phones_row = create_three_column_row(spark, 'Phone Numbers', unique_phone_count, phone_coverage)
+    emails_row = create_three_column_row(spark, 'Email Addresses', unique_email_count, email_coverage)
+    leads_row = create_three_column_row(spark, 'LeadiDs', unique_lead_count, lead_coverage)
+
+    return total_records.union(blank_row.union(header_row.union(phones_row.union(emails_row.union(leads_row)))))
+
+
+def get_record_count_for_identifier(dataframe, col_name):
+    """
+    Gets a list of unique record ids that have at least one identifier for a given type. For example if a column
+    has 6 phone numbers across 3 unique record ids, only those 3 record ids will be returned.
+
+    :param dataframe: A PySpark DataFrame
+    :param col_name: The column representing the identifier type
+    :return: A count of record ids that have at least one identifier for a given identifier type
+    """
+    return dataframe.select(InputColumnNames.RECORD_ID, InputColumnNames.INPUT_ID_RAW, col_name) \
+        .dropna(subset=[col_name]) \
+        .select(InputColumnNames.RECORD_ID) \
+        .distinct() \
+        .count()
+
+
+def get_unique_identifier_count(dataframe, columns_to_select, dropna_column):
+    """
+    Gets the number of unique identifiers for a given column in a DataFrame
+
+    :param dataframe: A PySpark DataFrame
+    :param columns_to_select: A list of columns to select from a DataFrame
+    :param dropna_column: The column which to drop null values
+    :return:
+    """
+    return dataframe.select(*columns_to_select) \
+        .dropna(subset=[dropna_column]) \
+        .distinct() \
+        .count()
+
+
+def validate_column_names(dataframe):
+    """
+    Validates whether a DataFrame has the required columns for the input summary.
+
+    :param dataframe: A DataFrame to validate
+    :return: A DataFrame with all of the necessary columns used for the input summary
+    """
+    for name in [GenericColumnNames.LEAD_ID, GenericColumnNames.PHONE, GenericColumnNames.EMAIL]:
+        if name not in dataframe.schema.names:
+            dataframe = dataframe.withColumn(name, lit(None))
+    return dataframe
+
+
+def create_three_column_row(spark, column_1, column_2, column_3):
+    """
+    Convenience function to help create rows for our summary DataFrames
+
+    :param spark: The application spark context
+    :param column_1: The value in column 1
+    :param column_2: The value in column 2
+    :param column_3: The value in column 3
+    :return: A three column DataFrame
+    """
+    return spark.createDataFrame([(column_1, column_2, column_3)])
+
+
+def calculate_identifier_coverage(identifier_count, total_record_count):
+    """
+    Returns a string value representing the identifier coverage (percent of records with at least one identifier per
+    column type divided by the total number of records)
+
+    :param identifier_count: An int representing at least one identifier per column type
+    :param total_record_count: The total number of records in the csv
+    :return: A string representing the identifier coverage
+    """
+    return format((identifier_count / total_record_count) * 100, '.0f') + ' %'

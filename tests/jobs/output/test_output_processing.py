@@ -1,10 +1,9 @@
 import pytest
 
-from jobs.output.output_processing import get_classifications_as_dictionary, transform_scoring_columns_for_output, \
-    build_output_csv_folder_name, summarize_output_df
+from jobs.output import output_processing as output
 from shared.constants import GenericColumnNames, Environments, ClassificationCategoryDisplayNames, \
-    ClassificationCategoryAbbreviations, InputColumnNames, OutputFileNames, ClassificationSubcategory, ThresholdValues
-from shared.constants import Test
+    ClassificationCategoryAbbreviations, InputColumnNames, ClassificationSubcategory, Test, OutputFileNames, \
+    ThresholdValues
 from tests.helpers import extract_rows_for_col_with_order
 
 # define mark (need followup if need this)
@@ -13,7 +12,7 @@ spark_session_enabled = pytest.mark.usefixtures("spark_session")
 
 def test_get_classifications_as_dictionary_returns_dictionary_with_recordid_added(spark_session):
     class_df = define_classification_subcategory_df(spark_session)
-    result_dict = get_classifications_as_dictionary(class_df)
+    result_dict = output.get_classifications_as_dictionary(class_df)
     expected_dict = {ClassificationCategoryAbbreviations.AUTO_SALES: ClassificationCategoryDisplayNames.AUTO_SALES,
                      ClassificationCategoryAbbreviations.EDUCATION: ClassificationCategoryDisplayNames.EDUCATION,
                      ClassificationCategoryAbbreviations.OTHER: ClassificationCategoryDisplayNames.OTHER,
@@ -31,7 +30,7 @@ def test_transform_output_scoring_columns(spark_session):
                  ClassificationCategoryAbbreviations.EDUCATION, ClassificationCategoryAbbreviations.OTHER]
     class_df = define_classification_subcategory_df(spark_session)
     input_df = spark_session.createDataFrame(raw_input_data, col_names)
-    result_df = transform_scoring_columns_for_output(class_df, input_df)
+    result_df = output.transform_scoring_columns_for_output(class_df, input_df)
     expected_col_names = [GenericColumnNames.RECORD_ID, ClassificationCategoryDisplayNames.AUTO_SALES,
                           ClassificationCategoryDisplayNames.EDUCATION, ClassificationCategoryDisplayNames.OTHER]
     assert sorted(result_df.schema.names) == sorted(expected_col_names)
@@ -50,7 +49,7 @@ def test_transform_output_scoring_columns_with_non_translatable_column(spark_ses
                  ClassificationCategoryAbbreviations.EDUCATION, ClassificationCategoryAbbreviations.OTHER, 'has_error']
     class_df = define_classification_subcategory_df(spark_session)
     input_df = spark_session.createDataFrame(raw_input_data, col_names)
-    result_df = transform_scoring_columns_for_output(class_df, input_df)
+    result_df = output.transform_scoring_columns_for_output(class_df, input_df)
     expected_col_names = [GenericColumnNames.RECORD_ID, ClassificationCategoryDisplayNames.AUTO_SALES,
                           ClassificationCategoryDisplayNames.EDUCATION, ClassificationCategoryDisplayNames.OTHER,
                           "has_error"]
@@ -61,73 +60,91 @@ def test_transform_output_scoring_columns_with_non_translatable_column(spark_ses
 
 
 def test_build_internal_output_csv_folder_name_dev():
-    full_name = build_output_csv_folder_name(Environments.DEV, Test.CLIENT_NAME, Test.JOB_RUN_ID,
-                                             OutputFileNames.INTERNAL)
-    expected_name = 's3://jornaya-dev-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/output/results_internal'
+    full_name = output.build_output_csv_folder_name(Environments.DEV, Test.CLIENT_NAME, Test.JOB_RUN_ID)
+    expected_name = 's3://jornaya-dev-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/output/'
     assert full_name == expected_name
 
 
 def test_build_internal_output_csv_folder_name_qa():
-    full_name = build_output_csv_folder_name(Environments.QA, Test.CLIENT_NAME, Test.JOB_RUN_ID,
-                                             OutputFileNames.INTERNAL)
-    expected_name = 's3://jornaya-qa-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/output/results_internal'
+    full_name = output.build_output_csv_folder_name(Environments.QA, Test.CLIENT_NAME, Test.JOB_RUN_ID)
+    expected_name = 's3://jornaya-qa-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/output/'
     assert full_name == expected_name
 
 
 def test_build_internal_output_csv_folder_name_staging():
-    full_name = build_output_csv_folder_name(Environments.STAGING, Test.CLIENT_NAME, Test.JOB_RUN_ID,
-                                             OutputFileNames.INTERNAL)
-    expected_name = 's3://jornaya-staging-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/output/results_internal'
+    full_name = output.build_output_csv_folder_name(Environments.STAGING, Test.CLIENT_NAME, Test.JOB_RUN_ID)
+    expected_name = 's3://jornaya-staging-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/output/'
     assert full_name == expected_name
 
 
 def test_build_internal_output_csv_folder_name_prod():
-    full_name = build_output_csv_folder_name(Environments.PROD, Test.CLIENT_NAME, Test.JOB_RUN_ID,
-                                             OutputFileNames.INTERNAL)
-    expected_name = 's3://jornaya-prod-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/output/results_internal'
+    full_name = output.build_output_csv_folder_name(Environments.PROD, Test.CLIENT_NAME, Test.JOB_RUN_ID)
+    expected_name = 's3://jornaya-prod-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/output/'
     assert full_name == expected_name
 
 
 def test_build_internal_output_csv_folder_name_local():
-    full_name = build_output_csv_folder_name(Environments.LOCAL, Test.CLIENT_NAME, Test.JOB_RUN_ID,
-                                             OutputFileNames.INTERNAL)
-    expected_name = '../samples/app_data/beestest/beestest_2018_01_02/output/results_internal'
+    full_name = output.build_output_csv_folder_name(Environments.LOCAL, Test.CLIENT_NAME, Test.JOB_RUN_ID)
+    expected_name = '../samples/app_data/beestest/beestest_2018_01_02/output/'
     assert full_name == expected_name
 
 
 def test_build_external_output_csv_folder_name_dev():
-    full_name = build_output_csv_folder_name(Environments.DEV, Test.CLIENT_NAME, Test.JOB_RUN_ID,
-                                             OutputFileNames.EXTERNAL)
-    expected_name = 's3://jornaya-dev-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/output/results_external'
+    full_name = output.build_output_csv_folder_name(Environments.DEV, Test.CLIENT_NAME, Test.JOB_RUN_ID)
+    expected_name = 's3://jornaya-dev-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/output/'
     assert full_name == expected_name
 
 
 def test_build_external_output_csv_folder_name_qa():
-    full_name = build_output_csv_folder_name(Environments.QA, Test.CLIENT_NAME, Test.JOB_RUN_ID,
-                                             OutputFileNames.EXTERNAL)
-    expected_name = 's3://jornaya-qa-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/output/results_external'
+    full_name = output.build_output_csv_folder_name(Environments.QA, Test.CLIENT_NAME, Test.JOB_RUN_ID)
+    expected_name = 's3://jornaya-qa-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/output/'
     assert full_name == expected_name
 
 
 def test_build_external_output_csv_folder_name_staging():
-    full_name = build_output_csv_folder_name(Environments.STAGING, Test.CLIENT_NAME, Test.JOB_RUN_ID,
-                                             OutputFileNames.EXTERNAL)
-    expected_name = 's3://jornaya-staging-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/output/results_external'
+    full_name = output.build_output_csv_folder_name(Environments.STAGING, Test.CLIENT_NAME, Test.JOB_RUN_ID)
+    expected_name = 's3://jornaya-staging-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/output/'
     assert full_name == expected_name
 
 
 def test_build_external_output_csv_folder_name_prod():
-    full_name = build_output_csv_folder_name(Environments.PROD, Test.CLIENT_NAME, Test.JOB_RUN_ID,
-                                             OutputFileNames.EXTERNAL)
-    expected_name = 's3://jornaya-prod-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/output/results_external'
+    full_name = output.build_output_csv_folder_name(Environments.PROD, Test.CLIENT_NAME, Test.JOB_RUN_ID)
+    expected_name = 's3://jornaya-prod-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/output/'
     assert full_name == expected_name
 
 
 def test_build_external_output_csv_folder_name_local():
-    full_name = build_output_csv_folder_name(Environments.LOCAL, Test.CLIENT_NAME, Test.JOB_RUN_ID,
-                                             OutputFileNames.EXTERNAL)
-    expected_name = '../samples/app_data/beestest/beestest_2018_01_02/output/results_external'
+    full_name = output.build_output_csv_folder_name(Environments.LOCAL, Test.CLIENT_NAME, Test.JOB_RUN_ID)
+    expected_name = '../samples/app_data/beestest/beestest_2018_01_02/output/'
     assert full_name == expected_name
+
+
+def test_append_output_location_returns_results_internal():
+    output_path = "../samples/app_data/beestest/beestest_2018_01_02/output/"
+    location = OutputFileNames.INTERNAL
+    result = output.append_output_location(output_path, location)
+    assert "../samples/app_data/beestest/beestest_2018_01_02/output/results_internal" == result
+
+
+def test_append_output_location_returns_results_external():
+    output_path = "s3://jornaya-dev-us-east-1-aida-insights/app_data/beestest/output/"
+    location = OutputFileNames.EXTERNAL
+    result = output.append_output_location(output_path, location)
+    assert "s3://jornaya-dev-us-east-1-aida-insights/app_data/beestest/output/results_external" == result
+
+
+def test_append_output_location_returns_input_summary():
+    output_path = "../samples/app_data/beestest/beestest_2018_01_02/output/"
+    location = OutputFileNames.INPUT_SUMMARY
+    result = output.append_output_location(output_path, location)
+    assert "../samples/app_data/beestest/beestest_2018_01_02/output/input_summary" == result
+
+
+def test_append_output_location_returns_output_summary():
+    output_path = "s3://jornaya-dev-us-east-1-aida-insights/app_data/beestest/output/"
+    location = OutputFileNames.OUTPUT_SUMMARY
+    result = output.append_output_location(output_path, location)
+    assert "s3://jornaya-dev-us-east-1-aida-insights/app_data/beestest/output/output_summary" == result
 
 
 def define_classification_subcategory_df(spark_session):
@@ -157,27 +174,45 @@ def define_classification_subcategory_df(spark_session):
 
 def test_summarize_output_df(spark_session):
     rows = [
-        ("1",  "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
-        ("2",  "NOT_SEEN",      "NOT_SEEN",      "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
-        ("3",  "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
-        ("4",  "NOT_SEEN",      "NOT_SEEN",      "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
-        ("5",  "NOT_SEEN",      "EARLY_JOURNEY", "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
-        ("6",  "NOT_SEEN",      "NOT_SEEN",      "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
-        ("7",  "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
-        ("8",  "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
-        ("9",  "NOT_SEEN",      "NOT_SEEN",      "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
-        ("10", "NOT_SEEN",      "NOT_SEEN",      "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
-        ("11", "EARLY_JOURNEY", "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
-        ("12", "EARLY_JOURNEY", "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
-        ("13", "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
-        ("14", "NOT_SEEN",      "NOT_SEEN",      "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
-        ("15", "NOT_SEEN",      "NOT_SEEN",      "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
-        ("16", "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
-        ("17", "NOT_SEEN",      "NOT_SEEN",      "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN")]
+        ("1", "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN",
+         "NOT_SEEN"),
+        ("2", "NOT_SEEN", "NOT_SEEN", "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN",
+         "NOT_SEEN"),
+        ("3", "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN",
+         "NOT_SEEN"),
+        ("4", "NOT_SEEN", "NOT_SEEN", "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN",
+         "NOT_SEEN"),
+        ("5", "NOT_SEEN", "EARLY_JOURNEY", "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN",
+         "NOT_SEEN", "NOT_SEEN"),
+        ("6", "NOT_SEEN", "NOT_SEEN", "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN",
+         "NOT_SEEN"),
+        ("7", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN",
+         "NOT_SEEN"),
+        ("8", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN",
+         "NOT_SEEN"),
+        ("9", "NOT_SEEN", "NOT_SEEN", "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN",
+         "NOT_SEEN"),
+        ("10", "NOT_SEEN", "NOT_SEEN", "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN",
+         "NOT_SEEN"),
+        ("11", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN",
+         "NOT_SEEN"),
+        ("12", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN",
+         "NOT_SEEN"),
+        ("13", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN",
+         "NOT_SEEN"),
+        ("14", "NOT_SEEN", "NOT_SEEN", "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN",
+         "NOT_SEEN"),
+        ("15", "NOT_SEEN", "NOT_SEEN", "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN",
+         "NOT_SEEN"),
+        ("16", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN",
+         "NOT_SEEN"),
+        ("17", "NOT_SEEN", "NOT_SEEN", "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN",
+         "NOT_SEEN")]
 
-    schema = ["recordid", "Auto Sales", "Education", "Insurance", "Financial Services", "Real Estate", "Jobs", "Legal", "Home Services", "Other"]
+    schema = ["recordid", "Auto Sales", "Education", "Insurance", "Financial Services", "Real Estate", "Jobs", "Legal",
+              "Home Services", "Other"]
     input_df = spark_session.createDataFrame(rows, schema)
-    res = summarize_output_df(spark_session, input_df)
+    res = output.summarize_output_df(spark_session, input_df)
     plain_data = res.collect()
     assert res.count() == 6
     assert len(res.schema.names) == 10
