@@ -25,6 +25,8 @@ class GenericColumnNames:  # pylint:disable=too-few-public-methods
     PHONE = "phone"
     EMAIL = "email"
     RECORD_ID = "recordid"
+    STAGE = "Stage"
+    TOTAL_RECORDS = "Total Records"
 
 
 class OutputFileNames:  # pylint:disable=too-few-public-methods

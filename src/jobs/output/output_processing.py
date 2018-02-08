@@ -1,6 +1,7 @@
-from pyspark.sql.functions import col
+from pyspark.sql.functions import col, concat, lit, asc
 
-from shared.constants import GenericColumnNames, Environments, ClassificationSubcategory, InputColumnNames
+from shared.constants import GenericColumnNames, Environments, ClassificationSubcategory, InputColumnNames, \
+    ThresholdValues, JoinTypes
 
 
 def transform_scoring_columns_for_output(classify_subcategory_df, scored_results_df):
@@ -53,7 +54,8 @@ def build_output_csv_folder_name(environment, client_name, job_run_id, location)
                                                        location)
 
 
-def write_output(environment, client_name, job_run_id, output_df, location):
+def write_output(environment, client_name, job_run_id, output_df,  # pylint:disable=too-many-arguments
+                 location, write_header="True"):
     """
     Builds the output location and writes to CSV format.
     :param environment: The current environment (Dev, Qa, Staging, etc..)
@@ -61,10 +63,57 @@ def write_output(environment, client_name, job_run_id, output_df, location):
     :param job_run_id: The id of the job run
     :param output_df: The DataFrame being written
     :param location: One of internal or external
+    :param write_header: write DataFrame header to CSV, default is 'True'
     :return:
     """
     output_path = build_output_csv_folder_name(environment, client_name, job_run_id, location)
     output_df \
         .coalesce(1) \
         .write \
-        .csv(path=output_path, mode="overwrite", header="True")
+        .csv(path=output_path, mode="overwrite", header=write_header)
+
+
+def summarize_output_df(spark, external_output_df):
+    order_col_name = "Order"
+    categories = [[1, ThresholdValues.NOT_SEEN],
+                  [2, ThresholdValues.EARLY_JOURNEY],
+                  [3, ThresholdValues.LATE_JOURNEY]]
+
+    res = spark.createDataFrame(categories, [order_col_name, GenericColumnNames.STAGE])
+
+    count = external_output_df.count()
+    for name in external_output_df.schema.names:
+        if GenericColumnNames.RECORD_ID != name:
+            sub_set = _create_sub_set(external_output_df, name, count)
+            res = res.join(sub_set, GenericColumnNames.STAGE, JoinTypes.LEFT_JOIN)
+
+    res = res.fillna("0 (0%)").sort(asc(order_col_name)).drop(order_col_name)
+
+    col_number = len(res.schema.names)
+    header = [""] * col_number
+    body = [""] * col_number
+    body[0] = GenericColumnNames.TOTAL_RECORDS
+    body[1] = str(count)
+    total = spark.createDataFrame([(body), (header), (res.schema.names)], res.schema.names)
+
+    out = total.unionAll(res)
+    out.show()
+
+    return out
+
+
+def summarize_input_df(spark, input_file_df):
+
+    stub = spark.createDataFrame([["Stub"]], ["stub"])
+    input_file_df.count()
+
+    return stub
+
+
+def _create_sub_set(data, col_name, count):
+    category_count = data.select(col(col_name)).groupBy(col_name).count()
+    category_percentage = category_count.select(col_name, ((col("count") / count) * 100).cast('integer').alias('perc'))
+    category_count_perc = category_count.join(category_percentage, col_name)
+    res = category_count_perc.select(col_name, concat(col("count"), lit(" ("), col("perc"), lit("%)")).alias("count"))
+    sub_set = res.select(col(col_name).alias(GenericColumnNames.STAGE), col("count").alias(col_name))
+    return sub_set
