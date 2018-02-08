@@ -1,9 +1,9 @@
 import pytest
 
 from jobs.output.output_processing import get_classifications_as_dictionary, transform_scoring_columns_for_output, \
-    build_output_csv_folder_name
+    build_output_csv_folder_name, summarize_output_df
 from shared.constants import GenericColumnNames, Environments, ClassificationCategoryDisplayNames, \
-    ClassificationCategoryAbbreviations, InputColumnNames, OutputFileNames, ClassificationSubcategory
+    ClassificationCategoryAbbreviations, InputColumnNames, OutputFileNames, ClassificationSubcategory, ThresholdValues
 from shared.constants import Test
 from tests.helpers import extract_rows_for_col_with_order
 
@@ -153,3 +153,55 @@ def define_classification_subcategory_df(spark_session):
                  ClassificationSubcategory.SUBCATEGORY_DISPLAY_NM,
                  ClassificationSubcategory.INSERT_TS]
     return spark_session.createDataFrame(raw_hash_rows, col_names)
+
+
+def test_summarize_output_df(spark_session):
+    rows = [
+        ("1",  "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
+        ("2",  "NOT_SEEN",      "NOT_SEEN",      "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
+        ("3",  "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
+        ("4",  "NOT_SEEN",      "NOT_SEEN",      "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
+        ("5",  "NOT_SEEN",      "EARLY_JOURNEY", "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
+        ("6",  "NOT_SEEN",      "NOT_SEEN",      "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
+        ("7",  "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
+        ("8",  "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
+        ("9",  "NOT_SEEN",      "NOT_SEEN",      "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
+        ("10", "NOT_SEEN",      "NOT_SEEN",      "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
+        ("11", "EARLY_JOURNEY", "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
+        ("12", "EARLY_JOURNEY", "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
+        ("13", "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
+        ("14", "NOT_SEEN",      "NOT_SEEN",      "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
+        ("15", "NOT_SEEN",      "NOT_SEEN",      "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
+        ("16", "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN",      "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN"),
+        ("17", "NOT_SEEN",      "NOT_SEEN",      "EARLY_JOURNEY", "EARLY_JOURNEY", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN", "NOT_SEEN")]
+
+    schema = ["recordid", "Auto Sales", "Education", "Insurance", "Financial Services", "Real Estate", "Jobs", "Legal", "Home Services", "Other"]
+    input_df = spark_session.createDataFrame(rows, schema)
+    res = summarize_output_df(spark_session, input_df)
+    plain_data = res.collect()
+    assert res.count() == 6
+    assert len(res.schema.names) == 10
+    # Check total records count
+    assert plain_data[0][1] == '17'
+
+    # Check some data
+    assert plain_data[3][3] == '8 (47%)'
+    assert plain_data[4][3] == '9 (52%)'
+    assert plain_data[5][3] == '0 (0%)'
+    assert plain_data[3][5] == '17 (100%)'
+
+    # Check Stage order
+    assert plain_data[3][0] == ThresholdValues.NOT_SEEN
+    assert plain_data[4][0] == ThresholdValues.EARLY_JOURNEY
+    assert plain_data[5][0] == ThresholdValues.LATE_JOURNEY
+
+    # Check all columns present
+    assert plain_data[2][1] == 'Auto Sales'
+    assert plain_data[2][2] == 'Education'
+    assert plain_data[2][3] == 'Insurance'
+    assert plain_data[2][4] == 'Financial Services'
+    assert plain_data[2][5] == 'Real Estate'
+    assert plain_data[2][6] == 'Jobs'
+    assert plain_data[2][7] == 'Legal'
+    assert plain_data[2][8] == 'Home Services'
+    assert plain_data[2][9] == 'Other'
