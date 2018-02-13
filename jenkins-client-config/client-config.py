@@ -8,6 +8,7 @@ s3_client = boto3.client('s3')
 env = os.environ['ENV']
 bucket_name = 'jornaya-' + env + '-us-east-1-aida-insights'
 client_name = os.environ['CLIENT_NAME']
+jornaya_account_id = os.environ['JORNAYA_ACCOUNT_ID']
 config_data = []
 
 # Response Industries
@@ -116,4 +117,9 @@ with open('client_config.csv', 'wb') as client_config_file:
         writer.writerow(element)
 
 # upload to s3
-s3_client.upload_file('client_config.csv', bucket_name, 'app_data/%s/client_config.csv' % client_name)
+s3_client.upload_file('client_config.csv',
+                      bucket_name,
+                      'app_data/%s/client_config.csv' % client_name,
+                      ExtraArgs={
+                          'GrantFullControl': 'id="'+jornaya_account_id+'"'
+                      })
