@@ -37,42 +37,42 @@ def test_get_application_defaults_location_returns_correct_prod_schema():
     assert 's3://jornaya-prod-us-east-1-aida-insights/pyspark/config/prod/application_defaults.csv' == result
 
 
-def test_get_client_overrides_location_returns_correct_local_schema():
-    result = config.get_client_overrides_location(Environments.LOCAL, Test.CLIENT_NAME, Test.JOB_RUN_ID)
-    assert '../samples/app_data/beestest/beestest_2018_01_02/input/client_overrides.csv' == result
+def test_get_client_config_location_returns_correct_local_schema():
+    result = config.get_client_config_location(Environments.LOCAL, Test.CLIENT_NAME, Test.JOB_RUN_ID)
+    assert '../samples/app_data/beestest/beestest_2018_01_02/input/client_config.csv' == result
 
 
-def test_get_client_overrides_location_returns_correct_dev_schema():
-    result = config.get_client_overrides_location(Environments.DEV, Test.CLIENT_NAME, Test.JOB_RUN_ID)
-    assert 's3://jornaya-dev-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/input/client_overrides.csv' == result
+def test_get_client_config_location_returns_correct_dev_schema():
+    result = config.get_client_config_location(Environments.DEV, Test.CLIENT_NAME, Test.JOB_RUN_ID)
+    assert 's3://jornaya-dev-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/input/client_config.csv' == result
 
 
-def test_get_client_overrides_location_returns_correct_qa_schema():
-    result = config.get_client_overrides_location(Environments.QA, Test.CLIENT_NAME, Test.JOB_RUN_ID)
-    assert 's3://jornaya-qa-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/input/client_overrides.csv' == result
+def test_get_client_config_location_returns_correct_qa_schema():
+    result = config.get_client_config_location(Environments.QA, Test.CLIENT_NAME, Test.JOB_RUN_ID)
+    assert 's3://jornaya-qa-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/input/client_config.csv' == result
 
 
-def test_get_client_overrides_location_returns_correct_staging_schema():
-    result = config.get_client_overrides_location(Environments.STAGING, Test.CLIENT_NAME, Test.JOB_RUN_ID)
-    assert 's3://jornaya-staging-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/input/client_overrides.csv' == result
+def test_get_client_config_location_returns_correct_staging_schema():
+    result = config.get_client_config_location(Environments.STAGING, Test.CLIENT_NAME, Test.JOB_RUN_ID)
+    assert 's3://jornaya-staging-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/input/client_config.csv' == result
 
 
-def test_get_client_overrides_location_returns_correct_prod_schema():
-    result = config.get_client_overrides_location(Environments.PROD, Test.CLIENT_NAME, Test.JOB_RUN_ID)
-    assert 's3://jornaya-prod-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/input/client_overrides.csv' == result
+def test_get_client_config_location_returns_correct_prod_schema():
+    result = config.get_client_config_location(Environments.PROD, Test.CLIENT_NAME, Test.JOB_RUN_ID)
+    assert 's3://jornaya-prod-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02/input/client_config.csv' == result
 
 
-def test_merge_client_config_with_app_config_returns_correct_config_when_client_override_is_empty(spark_session):
+def test_merge_client_config_with_app_config_returns_correct_config_when_client_config_is_empty(spark_session):
     default_rows = [("event_lookback", "auto_sales", 30),
                     ("event_lookback", "financial_services", 15),
                     ("frequency_threshold", "auto_sales", 5),
                     ("frequency_threshold", "financial_services", 7)]
     app_default_df = spark_session.createDataFrame(default_rows, config.configuration_schema())
 
-    override_rows = []
-    client_override_df = spark_session.createDataFrame(override_rows, config.configuration_schema())
+    client_config_rows = []
+    client_config_df = spark_session.createDataFrame(client_config_rows, config.configuration_schema())
 
-    result_df = config.merge_client_config_with_app_config(client_override_df, app_default_df)
+    result_df = config.merge_client_config_with_app_config(client_config_df, app_default_df)
     expected_columns = [ConfigurationSchema.OPTION, ConfigurationSchema.CONFIG_ABBREV, ConfigurationSchema.VALUE]
     assert sorted(result_df.columns) == sorted(expected_columns)
     assert result_df.count() == 4
@@ -82,21 +82,21 @@ def test_merge_client_config_with_app_config_returns_correct_config_when_client_
     assert sorted(expected_values) == sorted(extracted_values)
 
 
-def test_merge_client_config_with_app_config_returns_correct_config_when_client_override_is_not_empty(spark_session):
+def test_merge_client_config_with_app_config_returns_correct_config_when_client_config_is_not_empty(spark_session):
     default_rows = [("event_lookback", "auto_sales", 30),
                     ("event_lookback", "financial_services", 15),
                     ("frequency_threshold", "auto_sales", 5),
                     ("frequency_threshold", "financial_services", 7)]
     app_default_df = spark_session.createDataFrame(default_rows, config.configuration_schema())
 
-    override_rows = [("event_lookback", "auto_sales", 88),
+    client_config_rows = [("event_lookback", "auto_sales", 88),
                      ("event_lookback", "financial_services", 77),
                      ("frequency_threshold", "auto_sales", 66),
                      ("industry_results", "auto_sales", "auto_sales"),
                      ("asof", "asof", "2017-11-17 12:00:00.0")]
-    client_override_df = spark_session.createDataFrame(override_rows, config.configuration_schema())
+    client_config_df = spark_session.createDataFrame(client_config_rows, config.configuration_schema())
 
-    result_df = config.merge_client_config_with_app_config(client_override_df, app_default_df)
+    result_df = config.merge_client_config_with_app_config(client_config_df, app_default_df)
     expected_columns = [ConfigurationSchema.OPTION, ConfigurationSchema.CONFIG_ABBREV, ConfigurationSchema.VALUE]
     assert sorted(result_df.columns) == sorted(expected_columns)
     assert result_df.count() == 6

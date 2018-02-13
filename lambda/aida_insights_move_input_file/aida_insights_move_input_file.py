@@ -6,7 +6,7 @@ import boto3
 def lambda_handler(event, context):  # pylint:disable=unused-argument
     """
     A Lambda function to move the Aida Insights input csv file from the /incoming folder to the /app_data folder
-    for processing. Also copies the the client_overrides.csv file for a particular client job run.
+    for processing. Also copies the the client_config.csv file for a particular client job run.
     """
 
     s3_client = boto3.client('s3')
@@ -17,7 +17,7 @@ def lambda_handler(event, context):  # pylint:disable=unused-argument
     job_run_id = event['job_run_id']
 
     input_file_source_key = 'incoming/' + client_name + '/' + client_name + '.csv'
-    client_overrides_source_key = 'app_data/' + client_name + '/client_overrides.csv'
+    client_config_source_key = 'app_data/' + client_name + '/client_config.csv'
 
     input_file_destination_key = 'app_data/' \
                                  + client_name + '/' \
@@ -28,16 +28,16 @@ def lambda_handler(event, context):  # pylint:disable=unused-argument
     client_config_destination_key = 'app_data/' \
                                     + client_name + '/' \
                                     + client_name + '_' + job_run_id + '/' \
-                                    + 'input/client_overrides.csv'
+                                    + 'input/client_config.csv'
 
     input_file_copy_source = {
         'Bucket': bucket_name,
         'Key': input_file_source_key
     }
 
-    client_overrides_copy_source = {
+    client_config_copy_source = {
         'Bucket': bucket_name,
-        'Key': client_overrides_source_key
+        'Key': client_config_source_key
     }
 
     try:
@@ -46,8 +46,8 @@ def lambda_handler(event, context):  # pylint:disable=unused-argument
         s3_client.copy(input_file_copy_source, bucket_name, input_file_destination_key)
         s3_client.delete_object(Bucket=bucket_name, Key=input_file_source_key)
 
-        # Copy client overrides
-        s3_client.copy(client_overrides_copy_source, bucket_name, client_config_destination_key)
+        # Copy client config
+        s3_client.copy(client_config_copy_source, bucket_name, client_config_destination_key)
 
         return True
 
