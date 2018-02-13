@@ -436,3 +436,23 @@ def input_summary_test_schema():
          StructField(GenericColumnNames.LEAD_ID, StringType(), True),
          StructField(GenericColumnNames.PHONE, StringType(), True),
          StructField(GenericColumnNames.EMAIL, StringType(), True)])
+
+
+def test_transform_input_csv_lowercase_leadids(spark_session):
+    rows = [
+    (1, 'PPAAAAAA', 'PPSSSSSS', '', '', 'EESSSSSS', 'EEYYYYYY', '', '', 'LLDDDDDD-DDDD-DDDD-DDDD-DDDDDDDDDDDD', '', ''),
+    (2, 'PPBBBBBB', 'PPLLLLLL', 'PPMMMMM', '', 'EEBBBBBB', '', '', 'LLBBBBBB-BBBB-bbbb-BBBB-BBBBBBBBBBBB', '', '', ''),
+    (3, 'PPCCCCCC', '', '', '', '', 'EEAAAAAA', '', '', 'lldddddd-dddd-dddd-dddd-dddddddddddd', '', '')]
+
+    schema = ["record_id", "phone_1", "phone_2", "phone_3", "phone_4", "email_1", "email_2", "email_3", "lead_1", "lead_2", "lead_3", "asof"]
+    input_df = spark_session.createDataFrame(rows, schema)
+    res = input.transform_input_csv(input_df)
+    res.show()
+    leads = res.where(res['input_id_type'] == 'leadid')\
+        .filter(res['input_id_raw'] != '')\
+        .select(res['input_id_raw'])\
+        .distinct().sort(res['input_id_raw'].desc())
+    leads.show(10, False)
+    assert leads.count() == 2
+    assert leads.collect()[0][0] == 'LLDDDDDD-DDDD-DDDD-DDDD-DDDDDDDDDDDD'
+    assert leads.collect()[1][0] == 'LLBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB'

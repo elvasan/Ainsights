@@ -1,4 +1,4 @@
-from pyspark.sql.functions import lit, concat_ws, split, explode, when, \
+from pyspark.sql.functions import lit, concat_ws, split, explode, when, upper,\
     count as f_count  # pylint:disable=no-name-in-module
 from pyspark.sql.types import StructField, StructType, StringType, LongType
 
@@ -102,6 +102,8 @@ def transform_input_csv(input_csv_df):
     # select out record_id, and all_phones, all_emails, all_leads
     all_concat_df = input_csv_df. \
         select(input_csv_df.record_id, concatenated_phones, concatenated_emails, concatenated_leads)
+
+    all_concat_df = all_concat_df.withColumn('all_leads_string', upper(all_concat_df['all_leads_string']))
 
     # once have string of all values split by : to single column with array of string values
     phone_splitter = when(all_concat_df.all_phones_string == '', None) \
