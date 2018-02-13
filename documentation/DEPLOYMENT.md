@@ -61,7 +61,7 @@ to evaluate any events. Any events that are not within that 60 day window are om
 when calculating the industry score for that record.
 
 The application defaults file has default values for each industry that Jornaya has predetermined.
-A client can easily override these values by including an industy in the client overrides configuration.
+A client can easily override these values by including an industry in the client configuration.
 
 The following are valid column values:
 
@@ -148,17 +148,17 @@ The options designated with an asterisk are only available at this configuration
     | frequency_threshold    | auto_sales       |   4                                           |
     | schema_location        | hash_mapping     |   s3://jornaya-dev-us-east-1-fdl/hash_mapping |
 
-### Client Overrides
+### Client Configuration
 
 The client configuration files are stored within each respective client directory
-and the name of the file is always client_overrides.csv
+and the name of the file is always client_config.csv
 For example beestest configuration would be stored as
-s3://jornaya-dev-us-east-1-aida-insights/app_data/beestest/client_overrides.csv.
-During each run of our application, a copy of the client_overrides file is
+s3://jornaya-dev-us-east-1-aida-insights/app_data/beestest/client_config.csv.
+During each run of our application, a copy of the client_config file is
 copied into the run directory so we know exactly what the client configuration
 parameters are at the time that a file was run for a client.
 
-The following configuration options are available at the client overrides level:
+The following configuration options are available at the client config level:
 
     - event_lookback
     - frequency_threshold
@@ -188,7 +188,7 @@ only ever need to be set up once and from there new client directories can be cr
 
 2. S3 - Create a client directory under app_data with the client's configuration file.
     - Beestest example: s3://jornaya-dev-us-east-1-aida-insights/app_data/beestest
-    - Beestest configuration: s3://jornaya-dev-us-east-1-aida-insights/app_data/beestest/client_overrides.csv
+    - Beestest configuration: s3://jornaya-dev-us-east-1-aida-insights/app_data/beestest/client_config.csv
 
 ## Running the application
 
@@ -206,7 +206,7 @@ current timestamp to create the file run directory.
 
     - Beestest example: s3://jornaya-dev-us-east-1-aida-insights/app_data/beestest/beestest_2018_01_02_12_00_00_000000/
 
-The client overrides file will be copied to this location and the client csv will
+The client config file will be copied to this location and the client csv will
 be moved here and the AIDA Insights application will initiate a run.
 
 The application will write any results to an output directory here but from there

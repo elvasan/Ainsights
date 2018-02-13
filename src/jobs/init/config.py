@@ -55,20 +55,20 @@ def get_application_defaults_location(environment):
     return bucket_prefix + "pyspark/config/{}/application_defaults.csv".format(environment)
 
 
-def get_client_overrides_location(environment, client_name, job_run_id):
+def get_client_config_location(environment, client_name, job_run_id):
     """
-    Builds an absolute path to the client overrides file.
+    Builds an absolute path to the client config file.
 
     :param environment: The current environment (local, dev, qa, prod)
     :param client_name: The name of the client running the application
     :param job_run_id: The id of the job run.
-    :return: A string for locating the client override csv.
+    :return: A string for locating the client config csv.
     """
     if environment == Environments.LOCAL:
         bucket_prefix = Environments.LOCAL_BUCKET_PREFIX
     else:
         bucket_prefix = 's3://jornaya-{0}-{1}-aida-insights/'.format(environment, Environments.AWS_REGION)
-    return '{0}app_data/{1}/{1}_{2}/input/client_overrides.csv'.format(bucket_prefix, client_name, job_run_id)
+    return '{0}app_data/{1}/{1}_{2}/input/client_config.csv'.format(bucket_prefix, client_name, job_run_id)
 
 
 def get_application_default_df(spark, environment):
@@ -82,34 +82,34 @@ def get_application_default_df(spark, environment):
     return load_csv_file(spark, defaults_location, configuration_schema())
 
 
-def get_client_override_df(spark, environment, client_name, job_run_id):
+def get_client_config_df(spark, environment, client_name, job_run_id):
     """
-    Gets the client override configuration settings.
+    Gets the client configuration settings.
     :param spark: The application Spark Session
     :param environment: The current environment (local, dev, qa, staging, prod)
     :param client_name: The name of the client which the app is running
     :param job_run_id: The id of the job run.
-    :return: A DataFrame containing the client override configuration settings
+    :return: A DataFrame containing the client configuration settings
     """
-    overrides_location = get_client_overrides_location(environment, client_name, job_run_id)
-    return load_csv_file(spark, overrides_location, configuration_schema())
+    client_config_location = get_client_config_location(environment, client_name, job_run_id)
+    return load_csv_file(spark, client_config_location, configuration_schema())
 
 
-def merge_client_config_with_app_config(client_override_df, app_default_df):
+def merge_client_config_with_app_config(client_config_df, app_default_df):
     """
-    Function for merging the application configuration with the client overrides
-    :param client_override_df: DataFrame containing the client overrides
+    Function for merging the application configuration with the client config
+    :param client_config_df: DataFrame containing the client config
     :param app_default_df: DataFrame containing the application defaults
     :return: A DataFrame of application configuration
     """
-    join_condition = [app_default_df.option == client_override_df.option,
-                      app_default_df.config_abbrev == client_override_df.config_abbrev]
+    join_condition = [app_default_df.option == client_config_df.option,
+                      app_default_df.config_abbrev == client_config_df.config_abbrev]
 
-    # Get all of the config values from app defaults that aren't in client overrides
-    missing_client_config_df = app_default_df.join(client_override_df, join_condition, JoinTypes.LEFT_ANTI_JOIN)
+    # Get all of the config values from app defaults that aren't in client config
+    missing_client_config_df = app_default_df.join(client_config_df, join_condition, JoinTypes.LEFT_ANTI_JOIN)
 
-    # Union the client overrides and the missing config options with the application defaults
-    return missing_client_config_df.union(client_override_df)
+    # Union the client config and the missing config options with the application defaults
+    return missing_client_config_df.union(client_config_df)
 
 
 def get_subcategory_key_for_config_abbreviation(config_df, subcategory_df):
@@ -128,7 +128,7 @@ def get_subcategory_key_for_config_abbreviation(config_df, subcategory_df):
 
 def get_application_config_df(spark, environment, client_name, job_run_id):
     """
-    Gets the overall application configuration by combining the application defaults and client overrides. Then it
+    Gets the overall application configuration by combining the application defaults and client config. Then it
     converts the config abbreviation to the classification subcategory key and returns a DataFrame.
     :param spark: The application Spark Session
     :param environment: The current environment (local, dev, qa, staging, prod)
@@ -137,9 +137,9 @@ def get_application_config_df(spark, environment, client_name, job_run_id):
     :return: A DataFrame containing the overall application configuration settings
     """
     application_defaults_df = get_application_default_df(spark, environment)
-    client_overrides_df = get_client_override_df(spark, environment, client_name, job_run_id)
+    client_config_df = get_client_config_df(spark, environment, client_name, job_run_id)
 
-    configuration_df = merge_client_config_with_app_config(client_overrides_df, application_defaults_df)
+    configuration_df = merge_client_config_with_app_config(client_config_df, application_defaults_df)
 
     # TODO: Fix this
     schema_locations = get_schema_location_dict(configuration_df)
