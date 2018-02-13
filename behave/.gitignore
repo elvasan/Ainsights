@@ -1,1 +1,9 @@
+
+## IntelliJ project files
+*.iml
+.idea
+
+# Temp data folder
 data/tmp
+
+
