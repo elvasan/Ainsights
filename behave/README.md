@@ -40,11 +40,12 @@ The AIDA Insights test framework uses behave/python for executing tests.
                                 developing file tests without incurring the cost of
                                 processing the file
      
-### Adding additional clients
+### Adding additional clients / features
 
-    Additional clients can be added by copying the Beestest feature file and editing 
-    it as necessary. For example, the step that checks for valid labels
-    (EARLY_JOURNEY, LATE_JOURNEY, NOT_SEEN)
+    Additional clients / features can be added by copying the beestest.feature file and 
+    editing it as necessary. For example, the step that checks for valid labels (EARLY_JOURNEY, 
+    LATE_JOURNEY, NOT_SEEN) does not need to be run for every client test.  
+    
          
 ### Updating expected data files
 
@@ -52,4 +53,5 @@ The AIDA Insights test framework uses behave/python for executing tests.
     To update them, copy the following files from tmp/{client} => expected_data/{client}
         client_input_summary.csv                ==>  client_input_summary.csv
         client_output_summary.csv               ==>  client_output_summary.csv
-        client_yyyy_mm_dd_hh_mm_ss_ffffff.csv   ==> client_output_detail.csv  
+        client_yyyy_mm_dd_hh_mm_ss_ffffff.csv   ==>  client_output_detail.csv  
+        client_input_error.csv                  ==>  client_input_error.csv

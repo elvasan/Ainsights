@@ -10,22 +10,21 @@
 #
 #   (*) At least one lead id and one of phone/email must be provided
 #
-@valid
-Feature: Beestest Happy Path
+@invalid
+Feature: Beestest Invalid input file
   Test the files created by AIDA Insights for a client
 
   Scenario: Setup
-     Given I use client beestest
-       And input file beestest.csv
-      When the test environment is set up
-      Then the input file is uploaded to the S3 incoming folder
-       And the input file is processed by the system
+    Given I use client beestest
+      And input file beestest-invalid.csv
+     When the test environment is set up
+     Then the input file is uploaded to the S3 incoming folder
+      And the input file is processed by the system
 
   Scenario: Download and test the output zip file
     Given the output zip file exists on the system
      When the zip file is downloaded
-     Then the input error file does not exist in the zip file
-      And the extracted client input summary file matches the expected file
-      And the extracted client output summary file matches the expected file
-      And the extracted client output detail file matches the expected file
-      And the reported statuses are EARLY_JOURNEY, LATE_JOURNEY or NOT_SEEN
+     Then the extracted client input error file matches the expected file
+      And the input summary file does not exist in the zip file
+      And the output summary file does not exist in the zip file
+      And the output detail file does not exist in the zip file

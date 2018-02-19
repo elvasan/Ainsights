@@ -1,8 +1,9 @@
+from datetime import datetime
+
 import json
 import os
 import pytz
 
-from datetime import datetime
 from utils.aws_utils import AWSUtils
 
 
@@ -26,8 +27,8 @@ def before_all(context):
     context.uploadTimestamp = None
     if context.config.userdata.get('upload') is not None:
         context.uploadTimestamp = pytz.utc.localize(datetime.strptime(
-                                    context.config.userdata.get('upload')+" UTC",
-                                    '%Y%m%d_%H%M %Z'))
+            context.config.userdata.get('upload') + " UTC",
+            '%Y%m%d_%H%M %Z'))
 
     # Get the config file path and make sure it exists
     context.scriptDir = os.path.dirname(__file__)
@@ -51,3 +52,5 @@ def before_all(context):
     # Connect to AWS.
     # This will prompt for your MFA code
     context.aws = AWSUtils.get_instance(context)
+
+    pass
