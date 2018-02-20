@@ -50,8 +50,8 @@ class AWSUtils(object):
                 temp_cred = json.load(config_file)
         else:
             if os.environ.get('mfa') is None:
-                print("Some error message that we need the mfa on the first run")
-                raise SystemExit(1)
+                print("No temp_cred.json file found and no mfa environment variable to create one")
+                raise ValueError
             temp_cred = dict()
 
         session_exists = False

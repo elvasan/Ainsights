@@ -1,11 +1,13 @@
-import zipfile
 import os
 import re
 import time
+import zipfile
 from datetime import datetime
-from behave import step
-from utils.file_utils import FileUtils
+
 import pytz
+from behave import step
+
+from utils.file_utils import FileUtils
 
 # Global so it can be passed between scenarios
 CLIENT_NAME = ""
@@ -92,7 +94,7 @@ def step_upload_input_file(context):
     # testing starting in the S3 outgoing/ folder without waiting for
     # the 20+ minute process to run on the uploaded data
     if context.uploadTimestamp is not None:
-        print("context.uploadTimestamp set to {}, no upload will occur".format(context.uploadTimestamp))
+        print("\ncontext.uploadTimestamp set to {}, no upload will occur".format(context.uploadTimestamp))
     else:
         remote_file_path = "incoming/{}/{}".format(CLIENT_NAME, CLIENT_NAME + ".csv")
 
@@ -115,7 +117,7 @@ def step_check_file_processed(context):
     # testing starting in the S3 outgoing/ folder without waiting for
     # the 20+ minute process to run on the uploaded data
     if context.uploadTimestamp is not None:
-        print("context.uploadTimestamp set to {}, using processed file".format(context.uploadTimestamp))
+        print("\ncontext.uploadTimestamp set to {}, using processed file".format(context.uploadTimestamp))
         CLIENT_TIMESTAMP = context.uploadTimestamp
 
     else:
@@ -128,12 +130,13 @@ def step_check_file_processed(context):
                 CLIENT_TIMESTAMP = pytz.utc.localize(datetime.utcnow())
                 break
 
-            print("Upload file still in /incoming, slept {}/{} minutes".format(elapsed_minutes, limit_minutes))
+            print("\nUpload file still in /incoming, slept {}/{} minutes".format(elapsed_minutes, limit_minutes))
             time.sleep(60)
             elapsed_minutes += 1
 
-        assert elapsed_minutes <= limit_minutes, "File {}.csv not moved from /incoming after {} minutes".format(
-            CLIENT_NAME, limit_minutes)
+        if elapsed_minutes > limit_minutes:
+            print("File {}.csv not moved from /incoming after {} minutes".format(CLIENT_NAME, limit_minutes))
+            assert False
 
 
 @step('the output zip file exists on the system')
@@ -168,14 +171,14 @@ def step_check_output_zip_file_exists(context):
         if CLIENT_ZIP_FILE is not None:
             break
 
-        print("No zip file in /outgoing newer than '{}', slept {}/{} minutes".format(CLIENT_TIMESTAMP, elapsed_minutes,
+        print("\nNo zip file in /outgoing newer than '{}', slept {}/{} minutes".format(CLIENT_TIMESTAMP, elapsed_minutes,
                                                                                      limit_minutes))
         time.sleep(60)
         elapsed_minutes += 1
 
-    assert CLIENT_ZIP_FILE is not None, "No {}.....zip found in /outgoing after {} minutes".format(
-        CLIENT_NAME, limit_minutes)
-
+    if CLIENT_ZIP_FILE is None:
+        print("No {}.....zip found in /outgoing after {} minutes".format(CLIENT_NAME, limit_minutes))
+        assert False
 
 @step('the zip file is downloaded')
 def step_download_client_zip_file(context):
@@ -227,7 +230,9 @@ def step_check_output_file_contents(context, file_type):
         print("No expected file found: " + local_path_expected)
         found = False
 
-    assert found, "One or more needed files does not exist"
+    if not found:
+        print("One or more needed files does not exist")
+        assert False
 
     # Do the comparison
     files_match = True

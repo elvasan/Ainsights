@@ -3,7 +3,8 @@
 *.iml
 .idea
 
-# Temp data folder
+# Temp data
 data/tmp
+temp_cred.json
 
 

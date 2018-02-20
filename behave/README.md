@@ -27,18 +27,26 @@ The AIDA Insights test framework uses behave/python for executing tests.
     
 ### Execution
 
-    Execute the test by running the command "behave -D env=jornaya-[dev|qa]"     
+    Execute the test by providing the environment variables on the command line:
+        env=jornaya-[dev|qa] mfa=1223456 upload=yyyymmdd_HHMM behave     
     
-    Behave command line options:
+    Environment variables are:
     
-        -D env=jornaya-[dev|qa] Defines the environment to run in (default qa)
+        env=jornaya-[dev|qa] Defines the environment to run in (default jornaya-qa)
         
-        -D upload=yyyymmdd_HHMM Defines a UTC timestamp. When this is defined, the
+        mfa=123456              Defines the mfa to establish a session with AWS
+                                The session will be good for 12 hours
+        
+        upload=yyyymmdd_HHMM    Defines a UTC timestamp. When this is defined, the
                                 upload and processing of a new file is skipped and
                                 the first .zip file in /outgoing with a timestamp 
                                 later than this is downloaded.  This is usefull for 
                                 developing file tests without incurring the cost of
                                 processing the file
+                                
+        cleanup=False           Tells behave to NOT remove files in data/tmp/{client} 
+                                before the test is run (default is True).
+                                
      
 ### Adding additional clients / features
 
@@ -55,3 +63,4 @@ The AIDA Insights test framework uses behave/python for executing tests.
         client_output_summary.csv               ==>  client_output_summary.csv
         client_yyyy_mm_dd_hh_mm_ss_ffffff.csv   ==>  client_output_detail.csv  
         client_input_error.csv                  ==>  client_input_error.csv
+

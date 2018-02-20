@@ -3,7 +3,7 @@ import os
 class EnvUtils:
 
     @classmethod
-    def get_env_variable(self, var_name, default='UNSET'):
+    def get(self, var_name, default=None):
         value = os.environ.get(var_name)
         if value is None:
             return default
