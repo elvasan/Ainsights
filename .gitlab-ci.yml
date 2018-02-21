@@ -30,8 +30,6 @@ unit:
     - /.*working.*/
 
 .deploy_template: &deploy_template
-  tags:
-    - docker
   stage: deploy
   when: manual
   before_script:
@@ -42,11 +40,17 @@ unit:
 
 dev_deploy:
   <<: *deploy_template
+  tags:
+    - docker
+    - jornaya-dev
   script:
     - make deploy-dev
 
 qa_deploy:
   <<: *deploy_template
+  tags:
+    - docker
+    - jornaya-qa
   script:
     - make deploy-qa
 
