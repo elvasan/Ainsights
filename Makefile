@@ -52,7 +52,16 @@ upload-dev: build
 	aws s3 sync dist s3://jornaya-dev-us-east-1-aida-insights/pyspark/
 	aws s3 sync lambda-dist s3://jornaya-dev-us-east-1-aida-insights/lambda
 
+upload-qa: build
+	aws s3 sync dist s3://jornaya-qa-us-east-1-aida-insights/pyspark/
+	aws s3 sync lambda-dist s3://jornaya-qa-us-east-1-aida-insights/lambda
+
 deploy-dev: upload-dev
 	for lambda_name in $$lambdas; do	\
 		aws lambda update-function-code --function-name $$lambda_name --s3-bucket jornaya-dev-us-east-1-aida-insights --s3-key lambda/$$lambda_name.zip --region us-east-1; \
+	done
+
+deploy-dev: upload-qa
+	for lambda_name in $$lambdas; do	\
+		aws lambda update-function-code --function-name $$lambda_name --s3-bucket jornaya-qa-us-east-1-aida-insights --s3-key lambda/$$lambda_name.zip --region us-east-1; \
 	done
