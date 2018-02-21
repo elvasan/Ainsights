@@ -61,7 +61,7 @@ deploy-dev: upload-dev
 		aws lambda update-function-code --function-name $$lambda_name --s3-bucket jornaya-dev-us-east-1-aida-insights --s3-key lambda/$$lambda_name.zip --region us-east-1; \
 	done
 
-deploy-dev: upload-qa
+deploy-qa: upload-qa
 	for lambda_name in $$lambdas; do	\
 		aws lambda update-function-code --function-name $$lambda_name --s3-bucket jornaya-qa-us-east-1-aida-insights --s3-key lambda/$$lambda_name.zip --region us-east-1; \
 	done
