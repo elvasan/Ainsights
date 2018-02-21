@@ -38,6 +38,8 @@ def analyze(spark, logger, **job_args):  # pylint:disable=too-many-locals, too-m
 
     logger.info("RAW INPUT FILE START")
     raw_input_data_frame = process_input_file(spark, logger, client_name, environment, job_run_id)
+    if not raw_input_data_frame:
+        return #TODO
     input_summary_df = summarize_input_df(spark, raw_input_data_frame)
     write_output(input_summary_df, output_path, OutputFileNames.INPUT_SUMMARY, "False")
     logger.info("RAW INPUT FILE END")

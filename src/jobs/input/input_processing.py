@@ -1,9 +1,10 @@
+import re
 from pyspark.sql.functions import lit, concat_ws, split, explode, when, upper,\
-    count as f_count  # pylint:disable=no-name-in-module
+    count as f_count, col  # pylint:disable=no-name-in-module
 from pyspark.sql.types import StructField, StructType, StringType, LongType
 
 from shared.constants import InputColumnNames, Environments, IdentifierTypes, RawInputCSVColumnNames, \
-    GenericColumnNames
+    GenericColumnNames, ValidationMessages
 
 ID_SEPARATOR = ':'
 
@@ -24,8 +25,80 @@ def process_input_file(spark, logger, client_name, environment, job_run_id):
 
     logger.info("input_processing: trying to read file named: {0}".format(full_file_name))
     raw_data_frame = load_csv_file(spark, full_file_name, input_csv_schema())
-    logger.info("input_processing: returning transformed file")
-    return transform_input_csv(raw_data_frame)
+
+    validation_errors = validate_input_data(spark, raw_data_frame)
+
+    if len(validation_errors) == 0:
+        logger.info("input_processing: returning transformed file")
+        return transform_input_csv(raw_data_frame)
+    else:
+        logger.info("input_processing: input file is incorrect")
+        handle_invalid_input_file(spark, raw_data_frame, validation_errors)
+        return False
+
+
+def handle_invalid_input_file(spark, data_frame, validation_errors):
+    return False
+
+
+def validate_input_data(spark, data_frame):
+    expected_columns = ['record_id', 'phone_1', 'phone_2', 'phone_3', 'phone_4', 'email_1', 'email_2', 'email_3', 'lead_1', 'lead_2', 'lead_3', 'as_of_time']
+    expected_max_record_id = 999999 #TODO: what is max number
+    validation_errors = list()
+
+    if data_frame.count() == 0:
+        validation_errors.append(ValidationMessages.EMPTY_FILE)
+
+    if len(data_frame.columns) != len(expected_columns):
+        validation_errors.append(ValidationMessages.INCORRECT_COLUMNS_NUMBER)
+
+    if(data_frame.columns != expected_columns):
+        validation_errors.append(ValidationMessages.INCORRECT_COLUMNS_NUMBER)
+
+    max_record_id = data_frame.select("record_id").groupby().max().collect()[0][0]
+    if expected_max_record_id < max_record_id:
+        validation_errors.append(ValidationMessages.INCORRECT_MAX_RECORDID)
+
+    record_id_max_count = data_frame.groupby("record_id").count().groupby().max("count").collect()[0][0] #1 - record id is unique
+    if record_id_max_count != 1:
+        validation_errors.append(ValidationMessages.RECORDID_NOT_UNIQUE)
+
+    leads = gather_columns(spark, data_frame, "lead")
+    phones = gather_columns(spark, data_frame, "phone")
+    emails = gather_columns(spark, data_frame, "email")
+
+    if leads.count() == 0:
+        validation_errors[ValidationMessages.NO_LEADIDS] = 0
+
+    expr_GUID = "^[A-Fa-f0-9]{8}-([A-Fa-f0-9]{4}-){3}[A-Fa-f0-9]{12}$"    #ex "LLBBBBBB-BBBB-bbbb-BBBB-BBBBBBBBBBBB"
+    expr_MD5 = "^[A-Fa-f0-9]{32}$"    #ex "cb2bd231beb9a8b84ac9ca8fec8912b2"
+    expr_SHA256 = "^[A-Fa-f0-9]{64}$"    #ex "9053d7779bf30bd5b8322aa99f847b423b4273e8db04bcc63d35a312795f0460"
+    md5_sha256 = "({0})|({1})".format(expr_MD5, expr_SHA256)
+
+    filtered_leads = leads.filter(~ leads["lead"].rlike(expr_GUID))
+    filtered_phones = phones.filter(~phones["phone"].rlike(md5_sha256))
+    filtered_emails = emails.filter(~emails["email"].rlike(md5_sha256))
+
+    if filtered_leads.count() != 0:
+        validation_errors.append(ValidationMessages.INCORRECT_LEADID_FORMAT)
+
+    if filtered_phones.count() != 0:
+        validation_errors.append(ValidationMessages.INCORRECT_PHONES_FORMAT)
+
+    if filtered_emails.count() != 0:
+        validation_errors.append(ValidationMessages.INCORRECT_EMAILS_FORMAT)
+
+    return validation_errors
+
+
+def gather_columns(spark, data, col_prefix):
+    regex = re.compile(col_prefix + r'*')
+    cols = list(filter(lambda x: regex.match(x), data.schema.names))
+    df = spark.createDataFrame([["null"]], [col_prefix])
+    for col_name in cols:
+        df = df.union(data.select(col_name))
+    res = df.filter(col(col_prefix) != "null")
+    return res
 
 
 def build_input_csv_file_name(environment, client_name, job_run_id):

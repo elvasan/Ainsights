@@ -190,3 +190,15 @@ class PublisherPermissions:  # pylint:disable=too-few-public-methods
 class Test:  # pylint:disable=too-few-public-methods
     JOB_RUN_ID = '2018_01_02'
     CLIENT_NAME = 'beestest'
+
+
+class ValidationMessages:
+    EMPTY_FILE = "Input file is empty"
+    INCORRECT_COLUMNS_NUMBER = "Incorrect columns number"
+    INCORRECT_COLUMNS_NAMES = "Incorrect columns names"
+    INCORRECT_MAX_RECORDID = "Too many records"
+    RECORDID_NOT_UNIQUE = "Record ids are not unique"
+    NO_LEADIDS = "No leadids provided"
+    INCORRECT_LEADID_FORMAT = "Some leads are not in GUID format"
+    INCORRECT_PHONES_FORMAT = "Some phones are not in MD5 or SHA256 format"
+    INCORRECT_EMAILS_FORMAT = "Some emails are not in MD5 or SHA256 format"
